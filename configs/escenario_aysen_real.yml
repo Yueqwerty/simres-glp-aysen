@@ -1,0 +1,172 @@
+# configs/escenario_aysen_real.yaml - Configuración con riesgos reales del estudio
+
+simulacion:
+  duracion: 8760  # 1 año completo para análisis de resiliencia
+  semilla_aleatoria: 42
+  precision_temporal: 0.01
+
+entidades:
+  camion_chacabuco_001:
+    capacidad: 22000
+    base_operacional: "Puerto Chacabuco"
+    ruta_principal: "Chacabuco-Coyhaique"
+    
+  camion_chacabuco_002:
+    capacidad: 22000
+    base_operacional: "Puerto Chacabuco" 
+    ruta_principal: "Chacabuco-Balmaceda"
+    
+  camion_balmaceda_001:
+    capacidad: 18000
+    base_operacional: "Terminal Aereo Balmaceda"
+    ruta_principal: "Balmaceda-Coyhaique"
+
+planta:
+  capacidad_maxima: 180000  # Basado en capacidad real de Chacabuco
+  nivel_critico: 36000      # 20% de capacidad
+  nivel_reabastecimiento: 144000  # 80% de capacidad
+  inventario_inicial: 90000  # 50% inicial
+  ubicacion: "Puerto Chacabuco"
+
+demanda:
+  patron_regional: "aysen"
+  poblacion_objetivo: 108000  # Población región de Aysén
+  consumo_per_capita_anual: 24.5  # kg GLP per capita
+  estacionalidad_invernal: 1.4  # 40% más demanda en invierno
+  
+# ========================================================================
+# CONFIGURACIÓN DE RIESGOS REALES DEL ESTUDIO
+# ========================================================================
+riesgos:
+  # RIESGOS DE NIVEL ALTO (Prioridad máxima)
+  "8-PT-SC":  # Cierre Puerto por Mal tiempo
+    activo: true
+    targets: ["PlantaAlmacenamiento"]
+    probabilidad_anual: 4
+    impacto_duracion_horas: 16
+    descripcion: "Cierre Puerto Chacabuco por condiciones meteorológicas adversas"
+    
+  "57-ST-CU":  # Nevadas / Cierre cruce fronterizo  
+    activo: true
+    targets: ["Camion"]
+    probabilidad_anual: 4
+    impacto_duracion_horas: 24
+    descripcion: "Cierre paso fronterizo por nevadas intensas"
+    
+  "58-ST-CU":  # Mantención Tramo Lago Blanco - Balmaceda
+    activo: true
+    targets: ["Camion"] 
+    probabilidad_anual: 4
+    impacto_duracion_horas: 12
+    descripcion: "Mantención programada tramo crítico Lago Blanco"
+    
+  "62-ST-CU":  # Mantención Cabo Negro
+    activo: true
+    targets: ["Camion"]
+    probabilidad_anual: 4
+    impacto_duracion_horas: 12
+    descripcion: "Mantención ruta suministro Cabo Negro"
+    
+  "63-ST-CU":  # Nevadas Cabo Negro
+    activo: true
+    targets: ["Camion"]
+    probabilidad_anual: 4  
+    impacto_duracion_horas: 20
+    descripcion: "Nevadas que afectan suministro Cabo Negro"
+
+  # RIESGOS SIGNIFICATIVOS (Selección de los más relevantes)
+  "10-PT-CU":  # Falla Terminal Marítimo
+    activo: true
+    targets: ["PlantaAlmacenamiento"]
+    probabilidad_anual: 2
+    impacto_duracion_horas: 48
+    descripcion: "Falla en infraestructura terminal marítimo Chacabuco"
+    
+  "37-TA-CU":  # Quiebre stock cilindros
+    activo: true
+    targets: ["PlantaAlmacenamiento"]
+    probabilidad_anual: 2
+    impacto_duracion_horas: 24
+    descripcion: "Quiebre de stock de cilindros en planta Coyhaique"
+    
+  "39-TA-CU":  # Falla planta envasado
+    activo: true
+    targets: ["PlantaAlmacenamiento"]
+    probabilidad_anual: 2
+    impacto_duracion_horas: 36
+    descripcion: "Falla en planta de envasado Coyhaique"
+    
+  "45-ST-CU":  # Conflicto social Balmaceda
+    activo: true
+    targets: ["Camion"]
+    probabilidad_anual: 2
+    impacto_duracion_horas: 18
+    descripcion: "Cortes de ruta por conflicto social en Balmaceda"
+    
+  "73-DI-CU":  # Restricción ruta Queulat
+    activo: true
+    targets: ["Camion"]
+    probabilidad_anual: 4
+    impacto_duracion_horas: 8
+    descripcion: "Restricciones de capacidad en ruta Queulat"
+    
+  "74-DI-CU":  # Restricción ruta El Diablo
+    activo: true
+    targets: ["Camion"] 
+    probabilidad_anual: 4
+    impacto_duracion_horas: 6
+    descripcion: "Restricciones en ruta El Diablo por condiciones geográficas"
+    
+  "75-DI-CU":  # Restricción puentes
+    activo: true
+    targets: ["Camion"]
+    probabilidad_anual: 5
+    impacto_duracion_horas: 4
+    descripcion: "Restricciones de peso en puentes (<45 ton)"
+
+  # RIESGOS MEDIANOS (Selección estratégica)
+  "11-PT-CU":  # Paro laboral puerto
+    activo: true
+    targets: ["PlantaAlmacenamiento"]
+    probabilidad_anual: 1
+    impacto_duracion_horas: 48
+    descripcion: "Paro laboral en puerto Chacabuco"
+    
+  "67-ST-CU":  # Falla mantenimiento camiones
+    activo: true
+    targets: ["Camion"] 
+    probabilidad_anual: 2
+    impacto_duracion_horas: 12
+    descripcion: "Falla de mantenimiento preventivo en camiones"
+    
+  "72-CA-CU":  # Inhabilitación planta por autoridad
+    activo: true
+    targets: ["PlantaAlmacenamiento"]
+    probabilidad_anual: 1
+    impacto_duracion_horas: 72
+    descripcion: "Inhabilitación temporal por control de autoridad"
+
+# Configuración específica para análisis ANOVA
+analisis_experimental:
+  factores_principales:
+    - numero_camiones
+    - capacidad_planta  
+    - nivel_critico
+    - duracion_simulacion
+    - numero_riesgos_activos
+  
+  variables_respuesta:
+    - tasa_satisfaccion_demanda
+    - tiempo_promedio_ciclo_camiones
+    - numero_quiebres_stock
+    - tiempo_bajo_nivel_critico
+    - utilizacion_camiones
+    - costo_total_operacion
+
+# Configuración para diseño de experimentos  
+doe_config:
+  tipo_diseño: "factorial_fraccionario"
+  resolucion: 4  # Permite detectar efectos principales e interacciones de 2 factores
+  replicas: 3
+  bloqueo: false
+  aleatorización: true
