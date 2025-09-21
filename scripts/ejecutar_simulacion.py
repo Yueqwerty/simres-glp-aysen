@@ -349,7 +349,7 @@ class EjecutorSimulacion:
             
             # Guardar como CSV
             resumen_df = pd.DataFrame(resumen)
-            csv_path = self.output_path.with_suffix('_resumen.csv')
+            csv_path = self.output_path.parent / f"{self.output_path.stem}_resumen.csv"
             resumen_df.to_csv(csv_path, index=False)
             
             logger.info(f"Resumen guardado en {csv_path}")

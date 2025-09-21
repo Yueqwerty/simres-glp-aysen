@@ -1,7 +1,6 @@
 """
 Entidades del sistema de simulación de cadena de suministro de GLP.
 Implementa patrones de diseño avanzados y programación estocástica.
-VERSIÓN COMPLETA con soporte YAML y todas las dependencias.
 """
 from __future__ import annotations
 
@@ -789,14 +788,12 @@ class NodoDemanda(EntidadBase):
                 # Demanda completamente satisfecha
                 self.metricas['demanda_total_satisfecha'] += volumen_satisfecho
                 
-                # === EVENTO ENRIQUECIDO con datos macroeconómicos ===
                 self._emit_event(TipoEvento.DEMANDA_SATISFECHA, {
                     'demanda_solicitada': demanda,
                     'volumen_suministrado': volumen_satisfecho,
                     'nivel_inventario_restante': self.planta.inventario.level,
                     'factor_estacional': self.patron_estacional(self.env.now),
                     'tiempo_procesamiento': self.env.now - inicio_evento,
-                    # NUEVOS DATOS MACROECONÓMICOS
                     'patron_regional': getattr(self, 'patron_regional', None),
                     'modo_macro': self.modo_macro_economico,
                     'consumo_per_capita_instantaneo': self._calcular_consumo_per_capita_actual()

@@ -96,23 +96,24 @@ class AggregacionPorTipo(EstrategiaAggregacion):
         agregacion = defaultdict(list)
         
         for evento in eventos:
-            agregacion[evento.tipo.value].append({
+            agregacion[evento.tipo].append({
                 'timestamp': evento.timestamp,
                 'entidad': evento.entidad_id,
                 'detalles': evento.detalles
             })
         
-        # Calcular estadísticas por tipo
         stats = {}
-        for tipo, eventos_tipo in agregacion.items():
-            stats[tipo.value] = {
+        for tipo_enum, eventos_tipo in agregacion.items():
+            stats[tipo_enum.value] = {
                 'count': len(eventos_tipo),
                 'entidades_unicas': len(set(e['entidad'] for e in eventos_tipo)),
                 'primer_evento': min(e['timestamp'] for e in eventos_tipo),
                 'ultimo_evento': max(e['timestamp'] for e in eventos_tipo)
             }
         
-        return {'estadisticas_por_tipo': stats, 'eventos_agrupados': dict(agregacion)}
+        agregacion_serializable = {k.value: v for k, v in agregacion.items()}
+        
+        return {'estadisticas_por_tipo': stats, 'eventos_agrupados': agregacion_serializable}
 
 
 class RepositorioEventos:
