@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional
 import simpy
 from numpy.random import Generator as NPGenerator
 
-from .entidades import Camion, NodoDemanda, PlantaAlmacenamiento
+from .entidades import Camion, NodoDemanda, PlantaAlmacenamiento, ProveedorExterno
 from .eventos import GestorDisrupciones
 
 logger = logging.getLogger(__name__)
@@ -37,6 +37,7 @@ class Simulacion:
         self.camiones: Dict[str, Camion] = {}
         self.planta: Optional[PlantaAlmacenamiento] = None
         self.nodo_demanda: Optional[NodoDemanda] = None
+        self.proveedor_externo: Optional[ProveedorExterno] = None
         
         # Sistema de disrupciones (se auto-inicializa con el catálogo completo)
         self.gestor_disrupciones = GestorDisrupciones(self.env, self.rng)
@@ -67,6 +68,16 @@ class Simulacion:
             config=planta_config
         )
         
+        # Crear proveedor externo
+        proveedor_config = self.config.get('proveedor_externo', {})
+        self.proveedor_externo = ProveedorExterno(
+            env=self.env,
+            proveedor_id="proveedor_principal",
+            rng=self.rng,
+            config=proveedor_config,
+            planta=self.planta
+        )
+        
         # Crear camiones
         entidades_config = self.config['entidades']
         for camion_id, camion_config in entidades_config.items():
@@ -87,7 +98,7 @@ class Simulacion:
             planta=self.planta
         )
         
-        logger.info(f"Entidades creadas: {len(self.camiones)} camiones, 1 planta, 1 nodo demanda")
+        logger.info(f"Entidades creadas: {len(self.camiones)} camiones, 1 planta, 1 proveedor, 1 nodo demanda")
     
     def _configurar_disrupciones(self) -> None:
         """Configura el sistema de disrupciones."""
@@ -96,6 +107,8 @@ class Simulacion:
             self.gestor_disrupciones.registrar_entidad(self.planta)
         if self.nodo_demanda:
             self.gestor_disrupciones.registrar_entidad(self.nodo_demanda)
+        if self.proveedor_externo:
+            self.gestor_disrupciones.registrar_entidad(self.proveedor_externo)
         for camion in self.camiones.values():
             self.gestor_disrupciones.registrar_entidad(camion)
         
@@ -133,6 +146,8 @@ class Simulacion:
             entidades.append(self.planta)
         if self.nodo_demanda:
             entidades.append(self.nodo_demanda)
+        if self.proveedor_externo:
+            entidades.append(self.proveedor_externo)
         entidades.extend(self.camiones.values())
         return entidades
     
@@ -157,7 +172,11 @@ class Simulacion:
         
         # Métricas de planta
         if self.planta:
-            metricas['planta_principal'] = self.planta.metricas.copy()
+            metricas['planta_principal'] = self.planta.get_metricas()
+        
+        # Métricas de proveedor
+        if self.proveedor_externo:
+            metricas['proveedor_principal'] = self.proveedor_externo.get_metricas()
         
         # Métricas de demanda
         if self.nodo_demanda:

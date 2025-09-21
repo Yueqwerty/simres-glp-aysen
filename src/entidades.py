@@ -61,7 +61,6 @@ class EventoSistema:
             'details_json': json.dumps(self.detalles)
         }
 
-
 class DistribucionEstocastica:
     """
     Wrapper para distribuciones estocásticas con validación y memoización.
@@ -156,7 +155,7 @@ class Observer(Protocol):
         ...
 
 
-class EntidadBase(Observable):
+class EntidadBase(Observable, ABC):
     """Clase base para todas las entidades del sistema."""
     
     def __init__(self, 
@@ -171,7 +170,17 @@ class EntidadBase(Observable):
         self.config = config
         self.estado = EstadoEntidad.INACTIVO
         self.activo = True
-        self.metricas: Dict[str, float] = {}
+        self.metricas: Dict[str, Any] = {}
+        self.proceso: Optional[simpy.Process] = None
+
+    @abstractmethod
+    def run(self) -> Generator:
+        """Proceso principal de la entidad que se ejecuta en la simulación."""
+        pass
+
+    def get_metricas(self) -> Dict[str, Any]:
+        """Retorna las métricas de la entidad."""
+        return self.metricas.copy()
     
     def _emit_event(self, tipo: TipoEvento, detalles: Optional[Dict[str, Any]] = None) -> None:
         """Emite un evento al sistema de monitoreo."""
@@ -183,6 +192,81 @@ class EntidadBase(Observable):
         )
         self.notify_observers(evento)
 
+
+class ProveedorExterno(EntidadBase):
+    """
+    Proveedor externo que reabastecer la planta mediante barcos.
+    Simula llegadas periódicas con capacidad fija de reabastecimiento.
+    """
+    
+    def __init__(self,
+                 env: simpy.Environment,
+                 proveedor_id: str,
+                 rng: NPGenerator,
+                 config: Dict[str, Any],
+                 planta: 'PlantaAlmacenamiento'):
+        self.planta = planta
+        self.frecuencia_min = config.get('frecuencia_reabastecimiento_min_dias', 7) * 24
+        self.frecuencia_max = config.get('frecuencia_reabastecimiento_max_dias', 14) * 24
+        self.volumen_reabastecimiento = config.get('volumen_reabastecimiento_kg', 50000)
+        self.tiempo_descarga = config.get('tiempo_descarga_horas', 8)
+        
+        super().__init__(env, proveedor_id, rng, config)
+        
+        self.metricas = {
+            'eventos_completados': 0,
+            'tiempo_operativo': 0.0,
+            'volumen_total_suministrado': 0.0,
+            'reabastecimientos': []
+        }
+        
+        logger.info(f"Proveedor {proveedor_id} configurado: "
+                   f"{self.volumen_reabastecimiento}kg cada {self.frecuencia_min/24:.1f}-{self.frecuencia_max/24:.1f} días")
+        
+        self.proceso = self.env.process(self.run())
+    
+    def run(self):
+        """Proceso principal del proveedor: ciclo de reabastecimiento."""
+        while self.activo:
+            try:
+                # Esperar tiempo entre barcos (estocástico)
+                tiempo_espera = self.rng.uniform(self.frecuencia_min, self.frecuencia_max)
+                yield self.env.timeout(tiempo_espera)
+                
+                # Verificar si estamos en disrupción
+                if hasattr(self, 'en_disrupcion') and self.en_disrupcion:
+                    logger.info(f"Proveedor {self.entity_id} en disrupción, saltando reabastecimiento")
+                    continue
+                
+                # Iniciar proceso de reabastecimiento
+                logger.info(f"Barco llegando a {self.entity_id} con {self.volumen_reabastecimiento}kg de GLP")
+                
+                inicio_descarga = self.env.now
+                
+                # Realizar reabastecimiento
+                volumen_real = yield self.env.process(
+                    self.planta.reabastecer(self.volumen_reabastecimiento)
+                )
+                
+                # Actualizar métricas
+                self.metricas['eventos_completados'] += 1
+                self.metricas['tiempo_operativo'] += self.env.now - inicio_descarga
+                
+                self.metricas['reabastecimientos'].append({
+                    'tiempo': self.env.now,
+                    'volumen_solicitado': self.volumen_reabastecimiento,
+                    'volumen_real': volumen_real
+                })
+                self.metricas['volumen_total_suministrado'] += volumen_real
+                
+                logger.info(f"Reabastecimiento completado: {volumen_real}kg entregados")
+                
+            except simpy.Interrupt:
+                logger.warning(f"Proceso de proveedor {self.entity_id} interrumpido")
+                break
+            except Exception as e:
+                logger.error(f"Error en proveedor {self.entity_id}: {e}")
+                yield self.env.timeout(24)  # Esperar 24h antes de reintentar
 
 class Camion(EntidadBase):
     """
@@ -425,6 +509,9 @@ class PlantaAlmacenamiento(EntidadBase):
             init=config.get('inventario_inicial', self.capacidad_maxima * 0.5)
         )
         
+        # Recurso para modelar el muelle de descarga (1 barco a la vez)
+        self.recurso_planta = simpy.Resource(env, capacity=1)
+        
         # Eventos para gestión de inventario
         self.necesita_reabastecimiento = simpy.Event(env)
         self.stock_critico = simpy.Event(env)
@@ -439,14 +526,15 @@ class PlantaAlmacenamiento(EntidadBase):
             'tiempo_bajo_critico': 0.0,
             'numero_quiebres_stock': 0,
             'numero_reabastecimientos': 0,
-            'volumen_total_suministrado': 0.0
+            'volumen_total_recibido': 0.0,
+            'volumen_total_suministrado': 0.0,
         }
         
         # Proceso de monitoreo continuo
-        self.proceso_monitor = env.process(self._monitorear_inventario())
+        self.proceso = self.env.process(self.run())
     
-    def _monitorear_inventario(self) -> Generator:
-        """Monitoreo continuo del nivel de inventario."""
+    def run(self) -> Generator:
+        """Proceso principal de la planta: monitoreo continuo del inventario."""
         ultimo_timestamp = self.env.now
         
         while True:
@@ -486,29 +574,47 @@ class PlantaAlmacenamiento(EntidadBase):
             ultimo_timestamp = self.env.now
             yield self.env.timeout(0.1)  # Monitoreo cada 6 minutos (0.1 horas)
     
-    def reabastecer(self, volumen: float) -> Generator:
-        """Proceso de reabastecimiento de inventario."""
+    def reabastecer(self, volumen: float) -> Generator[simpy.Timeout, None, float]:
+        """
+        Proceso de reabastecimiento desde proveedor externo.
+        Retorna el volumen realmente añadido al inventario.
+        """
         if self.acceso_bloqueado:
             yield self.env.timeout(0.1)
-            return
-            
-        try:
-            yield self.inventario.put(volumen)
+            return 0.0
+
+        with self.recurso_planta.request() as request:
+            yield request
+
+            espacio_disponible = self.inventario.capacity - self.inventario.level
+            volumen_real = min(volumen, espacio_disponible)
+
+            if volumen_real < volumen:
+                logger.warning(
+                    f"Planta {self.entity_id}: solo se pueden añadir {volumen_real:.2f}kg de {volumen:.2f}kg solicitados."
+                )
+
+            if volumen_real > 0:
+                yield self.inventario.put(volumen_real)
+
             self.metricas['numero_reabastecimientos'] += 1
-            self.metricas['volumen_total_suministrado'] += volumen
-            
-            # Reset de eventos
-            self.necesita_reabastecimiento = simpy.Event(self.env)
-            self.stock_critico = simpy.Event(self.env)
-            
+            self.metricas['volumen_total_recibido'] += volumen_real
+
             self._emit_event(TipoEvento.REABASTECIMIENTO, {
-                'volumen_añadido': volumen,
+                'volumen_añadido': volumen_real,
                 'nivel_resultante': self.inventario.level,
-                'porcentaje_ocupacion': self.inventario.level / self.capacidad_maxima * 100
+                'porcentaje_ocupacion': self.inventario.level / self.inventario.capacity * 100
             })
-            
-        except simpy.ContainerPut as e:
-            logger.warning(f"Reabastecimiento excede capacidad en {self.entity_id}: {e}")
+
+            logger.info(f"Planta reabastecida: +{volumen_real:.2f}kg, inventario actual: {self.inventario.level:.2f}kg")
+
+            if self.inventario.level > self.nivel_critico and self.stock_critico.triggered:
+                self.stock_critico = simpy.Event(self.env)
+            if self.inventario.level > self.nivel_reabastecimiento and self.necesita_reabastecimiento.triggered:
+                self.necesita_reabastecimiento = simpy.Event(self.env)
+
+            return volumen_real
+        return 0.0
  
     def consumir(self, volumen: float) -> Generator:
         """
@@ -524,6 +630,7 @@ class PlantaAlmacenamiento(EntidadBase):
         
         if volumen_a_tomar > 0:
             yield self.inventario.get(volumen_a_tomar)
+            self.metricas['volumen_total_suministrado'] += volumen_a_tomar
         
         # Devuelve la cantidad que se pudo tomar (puede ser 0 o un valor parcial)
         return volumen_a_tomar
