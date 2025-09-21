@@ -1,49 +1,164 @@
-# src/modelo.py
+"""
+Modelo principal de simulación con sistema integrado de disrupciones.
+Implementa arquitectura modular con inyección de dependencias y gestión avanzada de estado.
+"""
+from __future__ import annotations
+
+import logging
+from typing import Any, Dict, List, Optional
+
 import simpy
-from dataclasses import dataclass
+from numpy.random import Generator as NPGenerator
 
-# Usamos dataclasses para estructurar los datos que registraremos.
-# Es una forma moderna y limpia de crear clases que solo contienen datos.
-@dataclass
-class LogInventario:
-    tiempo: float
-    nivel: float
-    planta_id: str
+from .entidades import Camion, NodoDemanda, PlantaAlmacenamiento
+from .eventos import GestorDisrupciones
 
-class PlantaAlmacenamiento:
-    """Representa una planta de almacenamiento con una capacidad y nivel de inventario."""
-    def __init__(self, env: simpy.Environment, id_planta: str, capacidad_tons: float, nivel_inicial_tons: float):
-        self.env = env
-        self.id_planta = id_planta
-        self.capacidad = capacidad_tons
-        # El Container de SimPy es perfecto para modelar inventarios o recursos limitados.
-        self.inventario = simpy.Container(env, capacity=capacidad_tons, init=nivel_inicial_tons)
+logger = logging.getLogger(__name__)
 
-class Camion:
-    """Representa un camión que realiza ciclos de carga, viaje y descarga."""
-    def __init__(self, env: simpy.Environment, id_camion: str, capacidad_tons: float, planta_origen: PlantaAlmacenamiento):
-        self.env = env
-        self.id_camion = id_camion
-        self.capacidad = capacidad_tons
-        self.planta_origen = planta_origen
-        # Iniciamos el proceso del camión tan pronto como se crea.
-        self.proceso = env.process(self.run())
 
-    def run(self):
-        """El ciclo de vida y comportamiento del camión."""
-        print(f"[{self.env.now:7.2f}] Camión {self.id_camion} listo para operar.")
-        while True:
-            # 1. Cargar en la planta de origen
-            print(f"[{self.env.now:7.2f}] Camión {self.id_camion} esperando para cargar en {self.planta_origen.id_planta}.")
-            # 'yield' le cede el control a SimPy. El proceso se reanudará cuando se cumpla la condición.
-            yield self.planta_origen.inventario.get(self.capacidad)
-            print(f"[{self.env.now:7.2f}] Camión {self.id_camion} cargado. Nivel planta: {self.planta_origen.inventario.level:.2f} tons.")
-            yield self.env.timeout(1) # Simula 1 hora para la operación de carga
-
-            # 2. Viajar (tiempo fijo por ahora)
-            print(f"[{self.env.now:7.2f}] Camión {self.id_camion} en ruta a destino.")
-            yield self.env.timeout(10) # Simula 10 horas de viaje
-
-            # 3. Descargar (el GLP simplemente "desaparece" por ahora)
-            print(f"[{self.env.now:7.2f}] Camión {self.id_camion} ha llegado y descargado.")
-            yield self.env.timeout(2) # Simula 2 horas para la descarga
+class Simulacion:
+    """
+    Clase principal que orquesta la simulación completa del sistema.
+    Integra el gemelo digital base con el sistema de disrupciones.
+    """
+    
+    def __init__(self, 
+                 duracion: float,
+                 rng: NPGenerator,
+                 config: Dict[str, Any]):
+        self.duracion = duracion
+        self.rng = rng
+        self.config = config
+        
+        # Entorno SimPy
+        self.env = simpy.Environment()
+        
+        # Entidades del sistema
+        self.camiones: Dict[str, Camion] = {}
+        self.planta: Optional[PlantaAlmacenamiento] = None
+        self.nodo_demanda: Optional[NodoDemanda] = None
+        
+        # Sistema de disrupciones
+        self.gestor_disrupciones = GestorDisrupciones(self.env, self.rng)
+        
+        # Estado de la simulación
+        self.inicializada = False
+        self.ejecutada = False
+        
+        # Inicializar componentes
+        self._inicializar_sistema()
+    
+    def _inicializar_sistema(self) -> None:
+        """Inicializa todos los componentes del sistema."""
+        self._crear_entidades()
+        self._configurar_disrupciones()
+        self._conectar_sistema()
+        self.inicializada = True
+        logger.info("Sistema de simulación inicializado")
+    
+    def _crear_entidades(self) -> None:
+        """Crea todas las entidades del sistema."""
+        # Crear planta de almacenamiento
+        planta_config = self.config['planta']
+        self.planta = PlantaAlmacenamiento(
+            env=self.env,
+            planta_id="planta_principal",
+            rng=self.rng,
+            config=planta_config
+        )
+        
+        # Crear camiones
+        entidades_config = self.config['entidades']
+        for camion_id, camion_config in entidades_config.items():
+            self.camiones[camion_id] = Camion(
+                env=self.env,
+                camion_id=camion_id,
+                rng=self.rng,
+                config=camion_config
+            )
+        
+        # Crear nodo de demanda
+        demanda_config = self.config['demanda']
+        self.nodo_demanda = NodoDemanda(
+            env=self.env,
+            nodo_id="demanda_regional",
+            rng=self.rng,
+            config=demanda_config,
+            planta=self.planta
+        )
+        
+        logger.info(f"Entidades creadas: {len(self.camiones)} camiones, 1 planta, 1 nodo demanda")
+    
+    def _configurar_disrupciones(self) -> None:
+        """Configura el sistema de disrupciones."""
+        # Registrar entidades para disrupciones
+        self.gestor_disrupciones.registrar_entidad(self.planta)
+        for camion in self.camiones.values():
+            self.gestor_disrupciones.registrar_entidad(camion)
+        
+        # Configurar riesgos activos
+        riesgos_config = self.config.get('riesgos', {})
+        if riesgos_config:
+            self.gestor_disrupciones.configurar_riesgos(riesgos_config)
+            logger.info(f"Riesgos configurados: {len(riesgos_config)} tipos activos")
+    
+    def _conectar_sistema(self) -> None:
+        """Conecta los diferentes componentes del sistema."""
+        # Aquí se pueden agregar conexiones específicas entre entidades
+        # Por ejemplo, asignar rutas específicas a camiones
+        pass
+    
+    def ejecutar(self) -> None:
+        """Ejecuta la simulación completa."""
+        if not self.inicializada:
+            raise RuntimeError("Simulación no inicializada")
+        
+        logger.info(f"Iniciando simulación por {self.duracion} horas")
+        
+        # Ejecutar simulación
+        self.env.run(until=self.duracion)
+        self.ejecutada = True
+        
+        logger.info("Simulación completada")
+    
+    def get_entidades(self) -> List[Any]:
+        """Retorna todas las entidades del sistema."""
+        entidades = []
+        if self.planta:
+            entidades.append(self.planta)
+        if self.nodo_demanda:
+            entidades.append(self.nodo_demanda)
+        entidades.extend(self.camiones.values())
+        return entidades
+    
+    def get_estado_final(self) -> Dict[str, Any]:
+        """Obtiene el estado final de la simulación."""
+        if not self.ejecutada:
+            raise RuntimeError("Simulación no ejecutada")
+        
+        return {
+            'duracion_simulada': self.env.now,
+            'estado_disrupciones': self.gestor_disrupciones.get_estado_sistema(),
+            'metricas_finales': self._recopilar_metricas_finales()
+        }
+    
+    def _recopilar_metricas_finales(self) -> Dict[str, Any]:
+        """Recopila métricas finales de todas las entidades."""
+        metricas = {}
+        
+        # Métricas de camiones
+        for camion_id, camion in self.camiones.items():
+            metricas[camion_id] = camion.get_metricas()
+        
+        # Métricas de planta
+        if self.planta:
+            metricas['planta_principal'] = self.planta.metricas.copy()
+        
+        # Métricas de demanda
+        if self.nodo_demanda:
+            metricas['demanda_regional'] = self.nodo_demanda.get_metricas()
+        
+        # Métricas de disrupciones
+        metricas['disrupciones'] = self.gestor_disrupciones.finalizar()
+        
+        return metricas

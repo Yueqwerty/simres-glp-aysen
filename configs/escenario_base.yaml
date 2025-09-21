@@ -1,5 +1,6 @@
 simulacion:
-  duracion_horas: 168 # 1 semana (24 * 7)
+  duracion_horas: 168
+  semilla_aleatoria: 42 # Para reproducibilidad
 
 planta_coyhaique:
   capacidad_tons: 450
