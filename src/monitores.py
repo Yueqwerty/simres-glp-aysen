@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class MetricasAcumuladas:
     """Estructura para métricas acumuladas del sistema."""
-    eventos_por_tipo: Dict[TipoEvento, int] = field(default_factory=lambda: defaultdict(int))
+    eventos_por_tipo: Dict[str, int] = field(default_factory=lambda: defaultdict(int)) # <--- CAMBIO AQUÍ
     eventos_por_entidad: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
     timestamps_eventos: List[float] = field(default_factory=list)
     duraciones_procesos: Dict[str, List[float]] = field(default_factory=lambda: defaultdict(list))
@@ -96,7 +96,7 @@ class AggregacionPorTipo(EstrategiaAggregacion):
         agregacion = defaultdict(list)
         
         for evento in eventos:
-            agregacion[evento.tipo].append({
+            agregacion[evento.tipo.value].append({
                 'timestamp': evento.timestamp,
                 'entidad': evento.entidad_id,
                 'detalles': evento.detalles
@@ -166,7 +166,7 @@ class RepositorioEventos:
     
     def _actualizar_metricas(self, evento: EventoSistema) -> None:
         """Actualiza métricas acumuladas de forma eficiente."""
-        self._metricas.eventos_por_tipo[evento.tipo] += 1
+        self._metricas.eventos_por_tipo[evento.tipo.value] += 1
         self._metricas.eventos_por_entidad[evento.entidad_id] += 1
         self._metricas.timestamps_eventos.append(evento.timestamp)
         

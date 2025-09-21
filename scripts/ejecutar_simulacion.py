@@ -78,8 +78,8 @@ class ConfiguracionSimulacion:
         if sim_config.get('duracion', 0) <= 0:
             raise ValueError("Duración de simulación debe ser positiva")
         
-        if sim_config.get('numero_camiones', 0) <= 0:
-            raise ValueError("Número de camiones debe ser positivo")
+        if len(self.config.get('entidades', {})) <= 0:
+            raise ValueError("Se debe definir al menos un camión en la sección 'entidades'")
         
         # Validar configuración de planta
         planta_config = self.config['planta']
