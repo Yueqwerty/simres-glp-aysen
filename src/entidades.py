@@ -510,7 +510,7 @@ class PlantaAlmacenamiento(EntidadBase):
             
         except simpy.ContainerPut as e:
             logger.warning(f"Reabastecimiento excede capacidad en {self.entity_id}: {e}")
-    
+ 
     def consumir(self, volumen: float) -> Generator:
         """
         Proceso de consumo de inventario. Devuelve el volumen realmente consumido.
@@ -520,9 +520,13 @@ class PlantaAlmacenamiento(EntidadBase):
             yield self.env.timeout(0.1)
             return 0.0
 
+        # Determinar cuánto se puede tomar realmente
         volumen_a_tomar = min(volumen, self.inventario.level)
+        
         if volumen_a_tomar > 0:
             yield self.inventario.get(volumen_a_tomar)
+        
+        # Devuelve la cantidad que se pudo tomar (puede ser 0 o un valor parcial)
         return volumen_a_tomar
 
 
