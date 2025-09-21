@@ -1,6 +1,7 @@
 """
 Entidades del sistema de simulación de cadena de suministro de GLP.
 Implementa patrones de diseño avanzados y programación estocástica.
+VERSIÓN COMPLETA con soporte YAML y todas las dependencias.
 """
 from __future__ import annotations
 
@@ -217,6 +218,11 @@ class Camion(EntidadBase):
             'volumen_transportado': 0.0
         }
         
+        # Variables para disrupciones
+        self.factor_disrupcion_climatica = 1.0
+        self.acceso_bloqueado = False
+        self.utilizacion_actual = 0.0
+        
         # Inicio del proceso principal
         self.proceso = env.process(self.run())
     
@@ -256,6 +262,11 @@ class Camion(EntidadBase):
     
     def _ciclo_operativo(self) -> Generator:
         """Ciclo operativo completo del camión."""
+        # Verificar si hay bloqueo social
+        if self.acceso_bloqueado:
+            yield self.env.timeout(self.rng.exponential(2.0))
+            return
+        
         # Fase 1: Esperar disponibilidad
         with self.disponible.request() as request:
             yield request
@@ -316,6 +327,13 @@ class Camion(EntidadBase):
         self.metricas['tiempo_total_viaje'] += tiempo_viaje
         self.metricas['volumen_transportado'] += self.carga_actual
         
+        # Calcular utilización actual
+        if self.env.now > 0:
+            tiempo_operativo = (self.metricas['tiempo_total_viaje'] + 
+                              self.metricas['tiempo_total_carga'] + 
+                              self.metricas['tiempo_total_descarga'])
+            self.utilizacion_actual = tiempo_operativo / self.env.now
+        
         self._emit_event(TipoEvento.FIN_VIAJE, {
             'tiempo_viaje': tiempo_viaje,
             'factor_disrupcion': factor_disrupcion,
@@ -356,8 +374,14 @@ class Camion(EntidadBase):
     
     def _calcular_factor_disrupcion(self) -> float:
         """Calcula el factor de impacto de disrupciones activas."""
-        # Placeholder - será implementado en Fase 2
-        return 1.0
+        factor_total = 1.0
+        
+        # Factor climático
+        factor_total *= self.factor_disrupcion_climatica
+        
+        # Otros factores de disrupción pueden agregarse aquí
+        
+        return factor_total
     
     def get_metricas(self) -> Dict[str, float]:
         """Retorna métricas de desempeño actualizadas."""
@@ -406,6 +430,9 @@ class PlantaAlmacenamiento(EntidadBase):
         self.necesita_reabastecimiento = simpy.Event(env)
         self.stock_critico = simpy.Event(env)
         
+        # Variables para disrupciones
+        self.acceso_bloqueado = False
+        
         # Métricas de inventario
         self.metricas = {
             'nivel_minimo_registrado': float('inf'),
@@ -424,6 +451,10 @@ class PlantaAlmacenamiento(EntidadBase):
         ultimo_timestamp = self.env.now
         
         while True:
+            if self.acceso_bloqueado:
+                yield self.env.timeout(1.0)
+                continue
+                
             nivel_actual = self.inventario.level
             
             # Actualizar métricas
@@ -441,6 +472,7 @@ class PlantaAlmacenamiento(EntidadBase):
                 
                 if not self.stock_critico.triggered:
                     self.stock_critico.succeed()
+                    self.metricas['numero_quiebres_stock'] += 1
                     self._emit_event(TipoEvento.QUIEBRE_STOCK, {
                         'nivel_actual': nivel_actual,
                         'nivel_critico': self.nivel_critico,
@@ -457,6 +489,10 @@ class PlantaAlmacenamiento(EntidadBase):
     
     def reabastecer(self, volumen: float) -> Generator:
         """Proceso de reabastecimiento de inventario."""
+        if self.acceso_bloqueado:
+            yield self.env.timeout(0.1)
+            return
+            
         try:
             yield self.inventario.put(volumen)
             self.metricas['numero_reabastecimientos'] += 1
@@ -476,22 +512,24 @@ class PlantaAlmacenamiento(EntidadBase):
             logger.warning(f"Reabastecimiento excede capacidad en {self.entity_id}: {e}")
     
     def consumir(self, volumen: float) -> Generator:
-        """Proceso de consumo de inventario."""
-        try:
-            yield self.inventario.get(volumen)
-            return volumen
-        except simpy.ContainerGet:
-            # Consumo parcial si no hay suficiente inventario
-            disponible = self.inventario.level
-            if disponible > 0:
-                yield self.inventario.get(disponible)
-                return disponible
+        """
+        Proceso de consumo de inventario. Devuelve el volumen realmente consumido.
+        Versión robusta que comprueba el nivel antes de consumir.
+        """
+        if self.acceso_bloqueado:
+            yield self.env.timeout(0.1)
             return 0.0
+
+        volumen_a_tomar = min(volumen, self.inventario.level)
+        if volumen_a_tomar > 0:
+            yield self.inventario.get(volumen_a_tomar)
+        return volumen_a_tomar
 
 
 class NodoDemanda(EntidadBase):
     """
-    Nodo generador de demanda estocástica con patrones temporales.
+    Nodo generador de demanda estocástica con patrones temporales avanzados.
+    NUEVA FUNCIONALIDAD: Interpreta configuración macroeconómica desde YAML.
     Implementa algoritmos de predicción de demanda y gestión de patrones estacionales.
     """
     
@@ -504,46 +542,195 @@ class NodoDemanda(EntidadBase):
         super().__init__(env, nodo_id, rng, config)
         self.planta = planta
         
-        # Configuración de demanda
+        # === NUEVA FUNCIONALIDAD: Interpretación YAML ===
+        self._interpretar_configuracion_yaml(config)
+        
+        # Configuración de demanda original (mantiene flexibilidad)
         self.intervalo_demanda = config.get('intervalo_demanda', 24.0)  # horas
         
-        # Distribuciones de demanda
+        # === ARQUITECTURA ORIGINAL: Distribuciones de demanda ===
         self._init_demand_distributions(config.get('distribuciones_demanda', {}))
         
-        # Patrones temporales (implementación de series de tiempo)
-        self.patron_estacional = self._init_seasonal_pattern(config.get('patron_estacional', {}))
+        # === NUEVA: Patrones regionales específicos ===
+        self.patron_estacional = self._init_regional_or_custom_pattern(config)
         
-        # Métricas de demanda
+        # === ARQUITECTURA ORIGINAL: Métricas de demanda ===
         self.metricas = {
             'demanda_total_generada': 0.0,
             'demanda_total_satisfecha': 0.0,
             'numero_eventos_demanda': 0,
             'numero_eventos_no_satisfechos': 0,
-            'tiempo_acumulado_desabastecimiento': 0.0
+            'tiempo_acumulado_desabastecimiento': 0.0,
+            # === NUEVAS MÉTRICAS MACROECONÓMICAS ===
+            'poblacion_objetivo': getattr(self, 'poblacion_objetivo', 0),
+            'consumo_per_capita_configurado': getattr(self, 'consumo_per_capita_anual', 0),
+            'demanda_base_diaria_calculada': getattr(self, 'demanda_base_diaria', 0)
         }
         
-        # Iniciar proceso de generación de demanda
+        # === ARQUITECTURA ORIGINAL: Iniciar proceso de generación de demanda ===
         self.proceso = env.process(self.run())
     
+    def _interpretar_configuracion_yaml(self, config: Dict[str, Any]) -> None:
+        """
+        NUEVA FUNCIONALIDAD: Interpreta configuración macroeconómica desde YAML.
+        Mantiene compatibilidad con configuración avanzada existente.
+        """
+        # Configuración macroeconómica desde YAML
+        self.patron_regional = config.get('patron_regional')
+        self.poblacion_objetivo = config.get('poblacion_objetivo')
+        self.consumo_per_capita_anual = config.get('consumo_per_capita_anual')
+        self.estacionalidad_invernal = config.get('estacionalidad_invernal', 1.0)
+        
+        # Si hay datos macroeconómicos, calcular demanda base
+        if self.poblacion_objetivo and self.consumo_per_capita_anual:
+            self.demanda_base_diaria = (
+                (self.poblacion_objetivo * self.consumo_per_capita_anual) / 365.0
+            )
+            self.modo_macro_economico = True
+            logger.info(f"Modo macroeconómico activado: {self.poblacion_objetivo:,} hab, "
+                       f"{self.consumo_per_capita_anual} kg/año per cápita")
+        else:
+            self.demanda_base_diaria = None
+            self.modo_macro_economico = False
+            logger.info("Modo configuración avanzada (distribuciones personalizadas)")
+    
     def _init_demand_distributions(self, config: Dict[str, Any]) -> None:
-        """Inicializa distribuciones de demanda."""
-        base_config = config.get('base', {})
+        """
+        ARQUITECTURA ORIGINAL MEJORADA: Inicializa distribuciones con soporte YAML.
+        """
+        if self.modo_macro_economico:
+            # === NUEVA: Generar distribuciones automáticamente desde datos macro ===
+            self._generar_distribuciones_desde_macro()
+        else:
+            # === ARQUITECTURA ORIGINAL: Configuración avanzada de distribuciones ===
+            base_config = config.get('base', {})
+            self.dist_demanda_base = DistribucionEstocastica(
+                self.rng,
+                base_config.get('tipo', 'lognormal'),
+                base_config.get('parametros', {'mu': 1.5, 'sigma': 0.4})
+            )
+            
+            # Distribución para variabilidad temporal
+            variability_config = config.get('variabilidad', {})
+            self.dist_variabilidad = DistribucionEstocastica(
+                self.rng,
+                variability_config.get('tipo', 'normal'),
+                variability_config.get('parametros', {'media': 1.0, 'desviacion': 0.15})
+            )
+    
+    def _generar_distribuciones_desde_macro(self) -> None:
+        """NUEVA: Genera distribuciones estocásticas a partir de datos macroeconómicos."""
+        # Demanda horaria promedio
+        demanda_horaria_promedio = self.demanda_base_diaria / 24.0
+        
+        # Distribución base: lognormal centrada en demanda horaria
+        mu_base = np.log(demanda_horaria_promedio * self.intervalo_demanda)
+        sigma_base = 0.25  # 25% de variabilidad estándar para GLP residencial
+        
         self.dist_demanda_base = DistribucionEstocastica(
             self.rng,
-            base_config.get('tipo', 'lognormal'),
-            base_config.get('parametros', {'mu': 1.5, 'sigma': 0.4})
+            'lognormal',
+            {'mu': mu_base, 'sigma': sigma_base}
         )
         
-        # Distribución para variabilidad temporal
-        variability_config = config.get('variabilidad', {})
+        # Variabilidad diaria más baja para GLP (es menos volátil que electricidad)
         self.dist_variabilidad = DistribucionEstocastica(
             self.rng,
-            variability_config.get('tipo', 'normal'),
-            variability_config.get('parametros', {'media': 1.0, 'desviacion': 0.15})
+            'normal',
+            {'media': 1.0, 'desviacion': 0.12}  # 12% variabilidad diaria
         )
     
+    def _init_regional_or_custom_pattern(self, config: Dict[str, Any]) -> callable:
+        """
+        NUEVA + ARQUITECTURA ORIGINAL: Patrones regionales específicos o personalizados.
+        """
+        # === NUEVA: Patrones regionales específicos ===
+        if hasattr(self, 'patron_regional') and self.patron_regional:
+            if self.patron_regional.lower() == 'aysen':
+                return self._crear_patron_aysen()
+            elif self.patron_regional.lower() in ['norte', 'antofagasta', 'atacama']:
+                return self._crear_patron_norte()
+            elif self.patron_regional.lower() in ['centro', 'metropolitana', 'valparaiso']:
+                return self._crear_patron_centro()
+            elif self.patron_regional.lower() in ['sur', 'bio_bio', 'araucania']:
+                return self._crear_patron_sur()
+        
+        # === ARQUITECTURA ORIGINAL: Patrón personalizado avanzado ===
+        return self._init_seasonal_pattern(config.get('patron_estacional', {}))
+    
+    def _crear_patron_aysen(self) -> callable:
+        """NUEVA: Patrón estacional específico para Región de Aysén."""
+        def patron_aysen(t_horas: float) -> float:
+            # Convertir tiempo a días del año
+            dia_del_año = (t_horas / 24.0) % 365.0
+            
+            # Invierno austral (junio-agosto): máxima demanda
+            # Factor senoidal desplazado para invierno austral
+            factor_anual = 1.0 + (self.estacionalidad_invernal - 1.0) * np.sin(
+                2 * np.pi * (dia_del_año - 172) / 365.0  # Pico en solsticio de invierno
+            )
+            
+            # Patrón semanal (menos demanda domingos)
+            dia_semana = (dia_del_año % 7)
+            factor_semanal = 1.0 - 0.2 * np.exp(-((dia_semana - 6) ** 2) / 0.5)
+            
+            # Patrón diario (mayor demanda mañana y noche)
+            hora_del_dia = (t_horas % 24.0)
+            factor_diario = (
+                1.0 + 0.3 * np.exp(-((hora_del_dia - 8) ** 2) / 8.0) +  # Pico mañana
+                0.4 * np.exp(-((hora_del_dia - 19) ** 2) / 6.0)  # Pico noche
+            )
+            
+            return max(0.2, factor_anual * factor_semanal * factor_diario)
+        
+        return patron_aysen
+    
+    def _crear_patron_norte(self) -> callable:
+        """NUEVA: Patrón para regiones del norte (menor estacionalidad)."""
+        def patron_norte(t_horas: float) -> float:
+            dia_del_año = (t_horas / 24.0) % 365.0
+            # Menor variación estacional en el norte
+            factor_estacional_reducido = min(1.2, self.estacionalidad_invernal)
+            factor_anual = 1.0 + (factor_estacional_reducido - 1.0) * np.sin(
+                2 * np.pi * (dia_del_año - 172) / 365.0
+            ) * 0.5  # Reducir amplitud estacional
+            
+            return max(0.5, factor_anual)
+        
+        return patron_norte
+    
+    def _crear_patron_centro(self) -> callable:
+        """NUEVA: Patrón para región central (estacionalidad moderada)."""
+        def patron_centro(t_horas: float) -> float:
+            dia_del_año = (t_horas / 24.0) % 365.0
+            factor_anual = 1.0 + (self.estacionalidad_invernal - 1.0) * np.sin(
+                2 * np.pi * (dia_del_año - 172) / 365.0
+            ) * 0.8  # Estacionalidad moderada
+            
+            # Mayor actividad de lunes a viernes
+            dia_semana = (dia_del_año % 7)
+            factor_semanal = 1.1 if dia_semana < 5 else 0.85  # Más demanda días laborales
+            
+            return max(0.4, factor_anual * factor_semanal)
+        
+        return patron_centro
+    
+    def _crear_patron_sur(self) -> callable:
+        """NUEVA: Patrón para regiones del sur (alta estacionalidad)."""
+        def patron_sur(t_horas: float) -> float:
+            dia_del_año = (t_horas / 24.0) % 365.0
+            # Máxima estacionalidad en el sur
+            factor_estacional_amplificado = max(self.estacionalidad_invernal, 1.3)
+            factor_anual = 1.0 + (factor_estacional_amplificado - 1.0) * np.sin(
+                2 * np.pi * (dia_del_año - 172) / 365.0
+            )
+            
+            return max(0.3, factor_anual)
+        
+        return patron_sur
+    
     def _init_seasonal_pattern(self, config: Dict[str, Any]) -> callable:
-        """Inicializa patrón estacional usando funciones trigonométricas."""
+        """ARQUITECTURA ORIGINAL: Inicializa patrón estacional usando funciones trigonométricas."""
         amplitud = config.get('amplitud', 0.2)
         fase = config.get('fase', 0.0)
         periodo = config.get('periodo', 24.0 * 7)  # Semanal por defecto
@@ -551,7 +738,7 @@ class NodoDemanda(EntidadBase):
         return lambda t: 1.0 + amplitud * np.sin(2 * np.pi * t / periodo + fase)
     
     def run(self) -> Generator:
-        """Proceso principal de generación de demanda."""
+        """ARQUITECTURA ORIGINAL: Proceso principal de generación de demanda."""
         while True:
             try:
                 # Esperar próximo evento de demanda
@@ -568,11 +755,11 @@ class NodoDemanda(EntidadBase):
                 yield self.env.timeout(1.0)
     
     def _generar_demanda(self) -> float:
-        """Genera demanda estocástica con patrones temporales."""
+        """ARQUITECTURA ORIGINAL MEJORADA: Genera demanda estocástica con patrones temporales."""
         # Demanda base estocástica
         demanda_base = self.dist_demanda_base.sample()
         
-        # Factor estacional
+        # Factor estacional (ahora con soporte regional)
         factor_estacional = self.patron_estacional(self.env.now)
         
         # Variabilidad adicional
@@ -584,7 +771,7 @@ class NodoDemanda(EntidadBase):
         return max(0.1, demanda_total)  # Evitar demanda negativa o cero
     
     def _procesar_demanda(self, demanda: float) -> Generator:
-        """Procesa un evento de demanda contra el inventario disponible."""
+        """ARQUITECTURA ORIGINAL MEJORADA: Procesa un evento de demanda contra el inventario disponible."""
         inicio_evento = self.env.now
         
         self.metricas['demanda_total_generada'] += demanda
@@ -598,11 +785,17 @@ class NodoDemanda(EntidadBase):
                 # Demanda completamente satisfecha
                 self.metricas['demanda_total_satisfecha'] += volumen_satisfecho
                 
+                # === EVENTO ENRIQUECIDO con datos macroeconómicos ===
                 self._emit_event(TipoEvento.DEMANDA_SATISFECHA, {
                     'demanda_solicitada': demanda,
                     'volumen_suministrado': volumen_satisfecho,
                     'nivel_inventario_restante': self.planta.inventario.level,
-                    'tiempo_procesamiento': self.env.now - inicio_evento
+                    'factor_estacional': self.patron_estacional(self.env.now),
+                    'tiempo_procesamiento': self.env.now - inicio_evento,
+                    # NUEVOS DATOS MACROECONÓMICOS
+                    'patron_regional': getattr(self, 'patron_regional', None),
+                    'modo_macro': self.modo_macro_economico,
+                    'consumo_per_capita_instantaneo': self._calcular_consumo_per_capita_actual()
                 })
             else:
                 # Demanda parcialmente satisfecha o no satisfecha
@@ -615,7 +808,11 @@ class NodoDemanda(EntidadBase):
                     'volumen_suministrado': volumen_satisfecho,
                     'deficit': deficit,
                     'porcentaje_satisfaccion': (volumen_satisfecho / demanda) * 100,
-                    'nivel_inventario_restante': self.planta.inventario.level
+                    'nivel_inventario_restante': self.planta.inventario.level,
+                    'factor_estacional': self.patron_estacional(self.env.now),
+                    # NUEVOS DATOS MACROECONÓMICOS
+                    'patron_regional': getattr(self, 'patron_regional', None),
+                    'impacto_poblacional': deficit / self.poblacion_objetivo if self.poblacion_objetivo else 0
                 })
                 
                 # Calcular tiempo de desabastecimiento
@@ -626,10 +823,21 @@ class NodoDemanda(EntidadBase):
         except Exception as e:
             logger.error(f"Error procesando demanda en {self.entity_id}: {e}")
     
+    def _calcular_consumo_per_capita_actual(self) -> float:
+        """NUEVA: Calcula consumo per cápita real en tiempo real."""
+        if not self.poblacion_objetivo or self.env.now <= 0:
+            return 0.0
+        
+        tiempo_años = self.env.now / (24.0 * 365.0)
+        if tiempo_años > 0:
+            return self.metricas['demanda_total_satisfecha'] / (self.poblacion_objetivo * tiempo_años)
+        return 0.0
+    
     def get_metricas(self) -> Dict[str, float]:
-        """Retorna métricas de demanda actualizadas."""
+        """ARQUITECTURA ORIGINAL ENRIQUECIDA: Retorna métricas de demanda actualizadas."""
         metricas = self.metricas.copy()
         
+        # === MÉTRICAS ORIGINALES ===
         if metricas['demanda_total_generada'] > 0:
             metricas['tasa_satisfaccion'] = (
                 metricas['demanda_total_satisfecha'] / metricas['demanda_total_generada']
@@ -644,4 +852,15 @@ class NodoDemanda(EntidadBase):
                 metricas['numero_eventos_no_satisfechos'] / metricas['numero_eventos_demanda']
             ) * 100
         
+        # === NUEVAS MÉTRICAS MACROECONÓMICAS ===
+        if self.modo_macro_economico:
+            metricas['consumo_per_capita_real'] = self._calcular_consumo_per_capita_actual()
+            
+            if hasattr(self, 'consumo_per_capita_anual'):
+                metricas['desviacion_consumo_per_capita'] = abs(
+                    metricas['consumo_per_capita_real'] - self.consumo_per_capita_anual
+                )
+            
+            metricas['factor_estacional_actual'] = self.patron_estacional(self.env.now)
+            
         return metricas
