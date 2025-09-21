@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "simres-glp-aysen"
+version = "0.1.0"
+description = "Simulación de la cadena de suministro de GLP en Aysén."
+authors = ["Carlos Subiabre Saldivia"]
+license = "MIT"
+readme = "README.md"
+package-mode = false  # <-- ¡LA LÍNEA MÁGICA!
+
+[tool.poetry.dependencies]
+python = "^3.11"
+simpy = "*"
+numpy = "*"
+pandas = "*"
+pyarrow = "*"
+typer = {extras = ["all"], version = "*"}
+pyyaml = "*"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "*"
+ruff = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
