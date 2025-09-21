@@ -1,0 +1,10 @@
+simulacion:
+  duracion_horas: 168 # 1 semana (24 * 7)
+
+planta_coyhaique:
+  capacidad_tons: 450
+  nivel_inicial_tons: 300
+
+flota:
+  num_camiones: 2
+  capacidad_camion_tons: 20
