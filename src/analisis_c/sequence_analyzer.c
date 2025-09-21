@@ -1,7 +1,6 @@
 /**
  * sequence_analyzer.c - Kernel de análisis avanzado para secuencias de eventos
  * Implementa algoritmos optimizados para construcción de grafos de transición
- * y análisis de patrones usando técnicas de programación competitiva.
  */
 
 #include <stdio.h>
@@ -10,7 +9,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-// Estructura para aristas del grafo de transición
+// Estructura para aristas del grafo
 typedef struct {
     int from;
     int to;
@@ -25,7 +24,7 @@ typedef struct {
     int max_node;
 } TransitionGraph;
 
-// Hash table para conteo eficiente de transiciones (técnica de leetcode)
+// Hash table para conteo eficiente
 #define HASH_SIZE 100007
 typedef struct HashNode {
     uint64_t key;  // (from << 32) | to
@@ -35,7 +34,7 @@ typedef struct HashNode {
 
 static HashNode* hash_table[HASH_SIZE];
 
-// Función hash usando multiplicación (técnica de hashing competitivo)
+// Función hash
 static inline int hash_function(uint64_t key) {
     return (key * 2654435761ULL) % HASH_SIZE;
 }
@@ -58,7 +57,7 @@ static void clear_hash_table(void) {
     }
 }
 
-// Insertar/actualizar contador en hash table (técnica de chaining)
+// Actualizar contador de transición
 static void update_transition_count(int from, int to) {
     uint64_t key = ((uint64_t)from << 32) | (uint64_t)to;
     int hash_idx = hash_function(key);
@@ -74,8 +73,10 @@ static void update_transition_count(int from, int to) {
         current = current->next;
     }
     
-    // Crear nuevo nodo si no existe
+    // Crear nuevo nodo
     HashNode* new_node = (HashNode*)malloc(sizeof(HashNode));
+    if (!new_node) return;
+    
     new_node->key = key;
     new_node->count = 1;
     new_node->next = hash_table[hash_idx];
@@ -85,28 +86,26 @@ static void update_transition_count(int from, int to) {
 // Función principal exportada a Python
 TransitionGraph* build_transition_graph(int* sequence, int length, int* result_size) {
     if (!sequence || length <= 1 || !result_size) {
-        *result_size = 0;
+        if (result_size) *result_size = 0;
         return NULL;
     }
     
-    // Inicializar estructuras
     init_hash_table();
     
     int max_node = 0;
     
-    // Primera pasada: construir hash table de transiciones
+    // Construir hash table de transiciones
     for (int i = 0; i < length - 1; i++) {
         int from = sequence[i];
         int to = sequence[i + 1];
         
-        // Actualizar nodo máximo
         if (from > max_node) max_node = from;
         if (to > max_node) max_node = to;
         
         update_transition_count(from, to);
     }
     
-    // Contar número total de transiciones únicas
+    // Contar transiciones únicas
     int unique_transitions = 0;
     for (int i = 0; i < HASH_SIZE; i++) {
         HashNode* current = hash_table[i];
@@ -116,14 +115,27 @@ TransitionGraph* build_transition_graph(int* sequence, int length, int* result_s
         }
     }
     
-    // Crear grafo de transición
+    // Crear grafo
     TransitionGraph* graph = (TransitionGraph*)malloc(sizeof(TransitionGraph));
+    if (!graph) {
+        clear_hash_table();
+        *result_size = 0;
+        return NULL;
+    }
+    
     graph->edges = (Edge*)malloc(unique_transitions * sizeof(Edge));
+    if (!graph->edges && unique_transitions > 0) {
+        free(graph);
+        clear_hash_table();
+        *result_size = 0;
+        return NULL;
+    }
+    
     graph->num_edges = 0;
     graph->capacity = unique_transitions;
     graph->max_node = max_node;
     
-    // Segunda pasada: llenar array de aristas
+    // Llenar array de aristas
     for (int i = 0; i < HASH_SIZE; i++) {
         HashNode* current = hash_table[i];
         while (current) {
@@ -140,14 +152,13 @@ TransitionGraph* build_transition_graph(int* sequence, int length, int* result_s
         }
     }
     
-    // Limpiar hash table
     clear_hash_table();
     
     *result_size = graph->num_edges;
     return graph;
 }
 
-// Función para liberar memoria del grafo
+// Liberar memoria del grafo
 void free_transition_graph(TransitionGraph* graph) {
     if (graph) {
         if (graph->edges) {
@@ -157,44 +168,50 @@ void free_transition_graph(TransitionGraph* graph) {
     }
 }
 
-// Función para obtener matriz de adyacencia (formato denso para NetworkX)
+// Obtener matriz de adyacencia
 int* get_adjacency_matrix(TransitionGraph* graph, int* matrix_size) {
     if (!graph || graph->max_node < 0) {
-        *matrix_size = 0;
+        if (matrix_size) *matrix_size = 0;
         return NULL;
     }
     
     int n = graph->max_node + 1;
-    *matrix_size = n;
+    if (matrix_size) *matrix_size = n;
     
-    // Inicializar matriz con ceros
+    // Crear matriz inicializada con ceros
     int* matrix = (int*)calloc(n * n, sizeof(int));
     if (!matrix) {
-        *matrix_size = 0;
+        if (matrix_size) *matrix_size = 0;
         return NULL;
     }
     
-    // Llenar matriz con pesos de transiciones
+    // Llenar matriz con pesos
     for (int i = 0; i < graph->num_edges; i++) {
         int from = graph->edges[i].from;
         int to = graph->edges[i].to;
         int weight = graph->edges[i].weight;
         
-        matrix[from * n + to] = weight;
+        if (from >= 0 && from < n && to >= 0 && to < n) {
+            matrix[from * n + to] = weight;
+        }
     }
     
     return matrix;
 }
 
-// Función avanzada: detectar ciclos usando DFS (algoritmo de grafos competitivo)
+// DFS para detección de ciclos
 bool has_cycle_dfs(TransitionGraph* graph, int node, bool* visited, bool* rec_stack) {
+    if (node < 0 || node > graph->max_node) return false;
+    
     visited[node] = true;
     rec_stack[node] = true;
     
-    // Recorrer todas las aristas salientes
+    // Recorrer aristas salientes
     for (int i = 0; i < graph->num_edges; i++) {
         if (graph->edges[i].from == node) {
             int neighbor = graph->edges[i].to;
+            
+            if (neighbor < 0 || neighbor > graph->max_node) continue;
             
             if (!visited[neighbor] && has_cycle_dfs(graph, neighbor, visited, rec_stack)) {
                 return true;
@@ -208,7 +225,7 @@ bool has_cycle_dfs(TransitionGraph* graph, int node, bool* visited, bool* rec_st
     return false;
 }
 
-// Detectar ciclos en el grafo de transición
+// Detectar ciclos en el grafo
 bool detect_cycles(TransitionGraph* graph) {
     if (!graph || graph->max_node < 0) {
         return false;
@@ -241,45 +258,7 @@ bool detect_cycles(TransitionGraph* graph) {
     return has_cycle;
 }
 
-// Función para encontrar caminos más pesados (algoritmo de camino más largo)
-typedef struct {
-    int* path;
-    int length;
-    int total_weight;
-} HeaviestPath;
-
-HeaviestPath* find_heaviest_paths(TransitionGraph* graph, int max_paths) {
-    // Implementación simplificada - en producción sería más completa
-    // Usar algoritmo de Bellman-Ford modificado para caminos más largos
-    
-    if (!graph || max_paths <= 0) {
-        return NULL;
-    }
-    
-    HeaviestPath* paths = (HeaviestPath*)malloc(max_paths * sizeof(HeaviestPath));
-    
-    // Por ahora retornamos estructura vacía - implementación completa requiere más espacio
-    for (int i = 0; i < max_paths; i++) {
-        paths[i].path = NULL;
-        paths[i].length = 0;
-        paths[i].total_weight = 0;
-    }
-    
-    return paths;
-}
-
-void free_heaviest_paths(HeaviestPath* paths, int count) {
-    if (paths) {
-        for (int i = 0; i < count; i++) {
-            if (paths[i].path) {
-                free(paths[i].path);
-            }
-        }
-        free(paths);
-    }
-}
-
-// Función de utilidad para debugging
+// Función de debugging
 void print_graph_info(TransitionGraph* graph) {
     if (!graph) {
         printf("Graph is NULL\n");
@@ -291,13 +270,15 @@ void print_graph_info(TransitionGraph* graph) {
     printf("  Max Node: %d\n", graph->max_node);
     printf("  Capacity: %d\n", graph->capacity);
     
-    printf("  Edges detail:\n");
-    for (int i = 0; i < graph->num_edges && i < 10; i++) {  // Solo primeras 10
+    printf("  Edges detail (first 10):\n");
+    int show_count = graph->num_edges < 10 ? graph->num_edges : 10;
+    for (int i = 0; i < show_count; i++) {
         printf("    %d -> %d (weight: %d)\n", 
                graph->edges[i].from, 
                graph->edges[i].to, 
                graph->edges[i].weight);
     }
+    
     if (graph->num_edges > 10) {
         printf("    ... and %d more edges\n", graph->num_edges - 10);
     }
