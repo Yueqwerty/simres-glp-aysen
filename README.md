@@ -24,40 +24,38 @@ Este proyecto aborda esa brecha metodológica mediante la construcción de un **
 
 El sistema está diseñado con una arquitectura modular desacoplada, siguiendo el principio de responsabilidad única.
 +--------------------------------+
-| Orquestadores (scripts/) |
-| (Typer, Multiprocessing) |
+|   Orquestadores (scripts/)     |
+| (Typer, Multiprocessing)       |
 +--------------------------------+
-|
-v
+               |
+               v
 +--------------------------------+
-| Motor de Simulación (src/) |
-| (Python, SimPy, NumPy) |
+|     Motor de Simulación (src/) |
+|      (Python, SimPy, NumPy)    |
 +----------------+---------------+
-| | |
-| v v
-| +-------------------------+ +---------------------------+
-| | Configuración | | Sistema de Disrupciones |
-| | (YAML Parser) | | (Gestor de Eventos) |
-| +-------------------------+ +---------------------------+
-| | |
-| v v
-| +-------------------------------------------------------+
-| | Gemelo Digital (Entidades: Planta, Camión, Proveedor) |
-| +-------------------------------------------------------+
-| |
-| v
-+--------------------------------+ +--------------------------+
-| Pipeline de Datos |------>| Motor de Análisis |
-| (Monitores, Pandas) | | (Scikit-learn, NetworkX) |
-+--------------------------------+ +-------------+------------+
-| |
-v v
-+--------------------------------+ +--------------------------+
-| Almacenamiento (results/) | | Kernel de Cómputo en C |
-| (Parquet, JSON) | | (Análisis de Grafos) |
-+--------------------------------+ +--------------------------+
-code
-Code
+|                |               |
+|                v               v
+|  +-------------------------+  +---------------------------+
+|  | Configuración           |  | Sistema de Disrupciones   |
+|  | (YAML Parser)           |  | (Gestor de Eventos)       |
+|  +-------------------------+  +---------------------------+
+|                |               |
+|                v               v
+|  +-------------------------------------------------------+
+|  | Gemelo Digital (Entidades: Planta, Camión, Proveedor) |
+|  +-------------------------------------------------------+
+|                |
+|                v
++--------------------------------+      +--------------------------+
+|      Pipeline de Datos         |------>|   Motor de Análisis      |
+|    (Monitores, Pandas)         |      | (Scikit-learn, NetworkX) |
++--------------------------------+      +-------------+------------+
+               |                                    |
+               v                                    v
++--------------------------------+      +--------------------------+
+|  Almacenamiento (results/)     |      | Kernel de Cómputo en C   |
+|     (Parquet, JSON)            |      |   (Análisis de Grafos)   |
++--------------------------------+      +--------------------------+
 ## 3. Stack Tecnológico
 
 | Categoría | Tecnología | Propósito en el Proyecto |
