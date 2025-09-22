@@ -27,23 +27,23 @@ El sistema está diseñado con una arquitectura modular desacoplada, donde cada 
 ```mermaid
 graph TD
     subgraph "Capa de Orquestación y Ejecución"
-        A[Orquestadores (scripts/ Typer)] --> B{Motor de Simulación (src/ Python, SimPy)}
+        A["Orquestadores (scripts/ Typer)"] --> B{"Motor de Simulación (src/ Python, SimPy)"}
     end
 
     subgraph "Núcleo del Gemelo Digital"
-        B --> C[Gemelo Digital: Entidades]
-        B --> D[Sistema de Disrupciones]
-        B --> E[Configuración (YAML Parser)]
+        B --> C["Gemelo Digital: Entidades"]
+        B --> D["Sistema de Disrupciones"]
+        B --> E["Configuración (YAML Parser)"]
     end
 
     subgraph "Pipeline y Almacenamiento de Datos"
-        B --> F[Pipeline de Datos (Monitores, Pandas)]
-        F --> G[(Almacenamiento: Parquet, JSON)]
+        B --> F["Pipeline de Datos (Monitores, Pandas)"]
+        F --> G[("Almacenamiento: Parquet, JSON")]
     end
 
     subgraph "Capa de Análisis Avanzado"
-        F --> H{Motor de Análisis (Scikit-learn, NetworkX)}
-        H --> I([Kernel de Cómputo en C])
+        F --> H{"Motor de Análisis (Scikit-learn, NetworkX)"}
+        H --> I(["Kernel de Cómputo en C"])
     end
 
     %% Estilos para un look profesional
