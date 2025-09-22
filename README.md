@@ -56,6 +56,7 @@ graph TD
     class A orchestrator
     class H,I analysis
     class F,G data
+```
 
 ## 4. Guía de Uso
 
