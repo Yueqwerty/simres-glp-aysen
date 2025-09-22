@@ -22,56 +22,40 @@ Este proyecto aborda esa brecha metodológica mediante la construcción de un **
 
 ## 2. Arquitectura del Sistema
 
-El sistema está diseñado con una arquitectura modular desacoplada, siguiendo el principio de responsabilidad única.
-+--------------------------------+
-|   Orquestadores (scripts/)     |
-| (Typer, Multiprocessing)       |
-+--------------------------------+
-               |
-               v
-+--------------------------------+
-|     Motor de Simulación (src/) |
-|      (Python, SimPy, NumPy)    |
-+----------------+---------------+
-|                |               |
-|                v               v
-|  +-------------------------+  +---------------------------+
-|  | Configuración           |  | Sistema de Disrupciones   |
-|  | (YAML Parser)           |  | (Gestor de Eventos)       |
-|  +-------------------------+  +---------------------------+
-|                |               |
-|                v               v
-|  +-------------------------------------------------------+
-|  | Gemelo Digital (Entidades: Planta, Camión, Proveedor) |
-|  +-------------------------------------------------------+
-|                |
-|                v
-+--------------------------------+      +--------------------------+
-|      Pipeline de Datos         |------>|   Motor de Análisis      |
-|    (Monitores, Pandas)         |      | (Scikit-learn, NetworkX) |
-+--------------------------------+      +-------------+------------+
-               |                                    |
-               v                                    v
-+--------------------------------+      +--------------------------+
-|  Almacenamiento (results/)     |      | Kernel de Cómputo en C   |
-|     (Parquet, JSON)            |      |   (Análisis de Grafos)   |
-+--------------------------------+      +--------------------------+
-## 3. Stack Tecnológico
+El sistema está diseñado con una arquitectura modular desacoplada, donde cada componente tiene una responsabilidad única. El flujo de información va desde la orquestación de alto nivel, pasando por el núcleo de simulación, hasta un pipeline de datos que alimenta el motor de análisis.
 
-| Categoría | Tecnología | Propósito en el Proyecto |
-| :--- | :--- | :--- |
-| **Núcleo de Simulación**| Python 3.11+ | Lenguaje principal por su ecosistema científico y legibilidad. |
-| | SimPy | Motor de Simulación de Eventos Discretos (DES) para la gestión del tiempo. |
-| | NumPy | Implementación de la estocasticidad (generación de variables aleatorias). |
-| **Pipeline de Datos** | YAML | Definición de escenarios experimentales de forma declarativa y legible. |
-| | Pandas | Estructuración y manipulación de los datos de series de tiempo generados. |
-| | Apache Parquet | Almacenamiento columnar de alto rendimiento para los resultados masivos del DoE. |
-| **Motor de Análisis** | Scikit-learn | Aplicación de algoritmos de Machine Learning (Clustering) para identificar arquetipos de fallo. |
-| | NetworkX | Modelado y análisis de los grafos de transición de eventos. |
-| | Matplotlib / Seaborn | Generación de visualizaciones y gráficos de alta calidad para la memoria. |
-| **Optimización** | Lenguaje C (GCC) | Implementación de un kernel de cómputo para los algoritmos de análisis de secuencias más intensivos, llamado desde Python. |
-| **Orquestación y Entorno** | Poetry | Gestión de dependencias y garantía de un entorno 100% reproducible. |
-| | Typer | Construcción de una Interfaz de Línea de Comandos (CLI) robusta y auto-documentada. |
+```mermaid
+graph TD
+    subgraph "Capa de Orquestación y Ejecución"
+        A[Orquestadores (scripts/ Typer)] --> B{Motor de Simulación (src/ Python, SimPy)}
+    end
+
+    subgraph "Núcleo del Gemelo Digital"
+        B --> C[Gemelo Digital: Entidades]
+        B --> D[Sistema de Disrupciones]
+        B --> E[Configuración (YAML Parser)]
+    end
+
+    subgraph "Pipeline y Almacenamiento de Datos"
+        B --> F[Pipeline de Datos (Monitores, Pandas)]
+        F --> G[(Almacenamiento: Parquet, JSON)]
+    end
+
+    subgraph "Capa de Análisis Avanzado"
+        F --> H{Motor de Análisis (Scikit-learn, NetworkX)}
+        H --> I([Kernel de Cómputo en C])
+    end
+
+    %% Estilos para un look profesional
+    classDef core fill:#ffe4e1,stroke:#b22222,stroke-width:2px
+    classDef orchestrator fill:#add8e6,stroke:#4682b4,stroke-width:2px
+    classDef analysis fill:#d3ffd3,stroke:#2e8b57,stroke-width:2px
+    classDef data fill:#fffacd,stroke:#b8860b,stroke-width:2px
+
+    class B,C,D,E core
+    class A orchestrator
+    class H,I analysis
+    class F,G data
 
 ## 4. Guía de Uso
 
