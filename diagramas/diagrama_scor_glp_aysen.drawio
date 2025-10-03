@@ -1,0 +1,269 @@
+<mxfile host="app.diagrams.net" modified="2025-10-02T00:00:00.000Z" agent="Claude Code" version="24.0.0">
+  <diagram name="SCOR - Cadena Suministro GLP Aysén" id="scor-glp-aysen">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="2339" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- TÍTULO -->
+        <mxCell id="titulo" value="Cadena de Suministro GLP Región de Aysén - Modelo SCOR" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="800" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- NIVEL 1: PROCESOS PRINCIPALES SCOR -->
+        <mxCell id="scor-plan" value="PLAN&lt;br&gt;(Planificación)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=16;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="40" y="120" width="200" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="scor-source" value="SOURCE&lt;br&gt;(Abastecimiento)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=16;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="280" y="120" width="200" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="scor-deliver" value="DELIVER&lt;br&gt;(Distribución)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=16;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="520" y="120" width="200" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="scor-return" value="RETURN&lt;br&gt;(Devoluciones)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=16;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="760" y="120" width="200" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="scor-enable" value="ENABLE&lt;br&gt;(Habilitadores)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=16;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="120" width="200" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Detalles PLAN -->
+        <mxCell id="plan-detail" value="• Proyección demanda&lt;br&gt;• Gestión inventarios&lt;br&gt;• Planificación flota" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="155" width="180" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- Detalles SOURCE -->
+        <mxCell id="source-detail" value="• ENAP Cabo Negro&lt;br&gt;• Proveedores Argentina&lt;br&gt;• Transporte primario" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="290" y="155" width="180" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- Detalles DELIVER -->
+        <mxCell id="deliver-detail" value="• Almacenamiento&lt;br&gt;• Envasado&lt;br&gt;• Distribución regional" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="530" y="155" width="180" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- Detalles RETURN -->
+        <mxCell id="return-detail" value="• Cilindros vacíos&lt;br&gt;• Gestión activos&lt;br&gt;• Logística inversa" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="770" y="155" width="180" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- Detalles ENABLE -->
+        <mxCell id="enable-detail" value="• Sistemas IT&lt;br&gt;• Regulación&lt;br&gt;• Infraestructura vial" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="155" width="180" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- NIVEL 2: FLUJO DETALLADO -->
+
+        <!-- ETAPA 1: ORIGEN DEL SUMINISTRO -->
+        <mxCell id="etapa1-title" value="ETAPA 1: ORIGEN DEL SUMINISTRO (SOURCE)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="280" width="1160" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Fuente 1: ENAP -->
+        <mxCell id="fuente-enap" value="&lt;b&gt;ENAP Cabo Negro&lt;/b&gt;&lt;br&gt;(Magallanes, Chile)&lt;br&gt;&lt;br&gt;Producto: Propano&lt;br&gt;Distancia: 1.437 km&lt;br&gt;Tramo Argentina: 1.238 km" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b1ddf0;strokeColor=#10739e;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="80" y="360" width="200" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Fuente 2: Argentina -->
+        <mxCell id="fuente-argentina" value="&lt;b&gt;Neuquén, Argentina&lt;/b&gt;&lt;br&gt;&lt;br&gt;Proveedores:&lt;br&gt;• YPF&lt;br&gt;• Pluspetrol&lt;br&gt;• Capex&lt;br&gt;Distancia: 1.302 km&lt;br&gt;Tramo Argentina: 1.252 km" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b1ddf0;strokeColor=#10739e;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="320" y="360" width="200" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- ETAPA 2: TRANSPORTE PRIMARIO -->
+        <mxCell id="etapa2-title" value="ETAPA 2: TRANSPORTE PRIMARIO (SOURCE → DELIVER)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="520" width="1160" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Paso Fronterizo -->
+        <mxCell id="paso-huemules" value="&lt;b&gt;Paso Huemules&lt;/b&gt;&lt;br&gt;(Punto de Ingreso Único)&lt;br&gt;&lt;br&gt;100% Camiones Cisterna&lt;br&gt;Capacidad: 22 TM&lt;br&gt;Flota: 7-18 camiones" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="400" y="600" width="200" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Flechas desde fuentes al paso -->
+        <mxCell id="arrow-enap-paso" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="1" source="fuente-enap" target="paso-huemules">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="label-enap" value="Temporada Cálida: 5.5-6 días&lt;br&gt;Temporada Fría: 5.7-7.5 días" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#0066CC;" vertex="1" connectable="0" parent="arrow-enap-paso">
+          <mxGeometry x="-0.1" y="2" relative="1" as="geometry">
+            <mxPoint x="15" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="arrow-arg-paso" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="1" source="fuente-argentina" target="paso-huemules">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Vulnerabilidades Transporte -->
+        <mxCell id="vulnerabilidades-transporte" value="&lt;b&gt;⚠️ VULNERABILIDADES&lt;/b&gt;&lt;br&gt;&lt;br&gt;• Clima: nieve/hielo (abr-sep)&lt;br&gt;• Ruta Lago Blanco: 109 km críticos&lt;br&gt;• Conflictividad social Argentina&lt;br&gt;• Cortes de ruta/protestas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="680" y="600" width="240" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- ETAPA 3: ALMACENAMIENTO Y ENVASADO -->
+        <mxCell id="etapa3-title" value="ETAPA 3: ALMACENAMIENTO PRIMARIO Y ENVASADO - HUB COYHAIQUE (DELIVER)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="780" width="1160" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Flecha desde paso a plantas -->
+        <mxCell id="arrow-paso-plantas" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=4;fillColor=#fff2cc;strokeColor=#d6b656;" edge="1" parent="1" source="paso-huemules" target="plantas-coyhaique">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="500" y="860" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Plantas Coyhaique -->
+        <mxCell id="plantas-coyhaique" value="&lt;b&gt;PLANTAS COYHAIQUE&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="280" y="860" width="640" height="200" as="geometry" />
+        </mxCell>
+
+        <!-- Abastible -->
+        <mxCell id="planta-abastible" value="&lt;b&gt;Abastible&lt;/b&gt;&lt;br&gt;&lt;br&gt;Capacidad Granel:&lt;br&gt;150 TM&lt;br&gt;&lt;br&gt;Envasado:&lt;br&gt;5, 11, 15, 45 kg" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffeaa7;strokeColor=#d6b656;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="300" y="900" width="180" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Gasco -->
+        <mxCell id="planta-gasco" value="&lt;b&gt;Gasco&lt;/b&gt;&lt;br&gt;&lt;br&gt;Capacidad Granel:&lt;br&gt;41 TM&lt;br&gt;(+260 TM proyecto)&lt;br&gt;&lt;br&gt;Envasado:&lt;br&gt;5, 11, 15, 45 kg" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffeaa7;strokeColor=#d6b656;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="510" y="900" width="180" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Lipigas -->
+        <mxCell id="planta-lipigas" value="&lt;b&gt;Lipigas&lt;/b&gt;&lt;br&gt;&lt;br&gt;Capacidad Granel:&lt;br&gt;240 TM&lt;br&gt;&lt;br&gt;Envasado:&lt;br&gt;5, 11, 15, 45 kg" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffeaa7;strokeColor=#d6b656;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="720" y="900" width="180" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Capacidad Total -->
+        <mxCell id="capacidad-total" value="&lt;b&gt;CAPACIDAD TOTAL&lt;/b&gt;&lt;br&gt;&lt;br&gt;Granel: 431 TM (9 tanques)&lt;br&gt;Envasado en planta: 140 TM&lt;br&gt;&lt;br&gt;Autonomía:&lt;br&gt;• Media: 10.3 días&lt;br&gt;• Pico (agosto): 8.2 días&lt;br&gt;&lt;br&gt;Proyecto: +260 TM → 690 TM&lt;br&gt;(13.1 días autonomía)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="980" y="860" width="220" height="200" as="geometry" />
+        </mxCell>
+
+        <!-- ETAPA 4: DISTRIBUCIÓN SECUNDARIA -->
+        <mxCell id="etapa4-title" value="ETAPA 4: DISTRIBUCIÓN SECUNDARIA DESDE COYHAIQUE (DELIVER)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1120" width="1160" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Bifurcación desde plantas -->
+        <mxCell id="bifurcacion" value="" style="shape=waypoint;sketch=0;fillStyle=solid;size=6;pointerEvents=1;points=[];fillColor=#fff2cc;resizable=0;rotatable=0;perimeter=centerPerimeter;snapToPoint=1;strokeColor=#d6b656;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="590" y="1090" width="40" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arrow-plantas-bif" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=4;fillColor=#fff2cc;strokeColor=#d6b656;" edge="1" parent="1" source="plantas-coyhaique" target="bifurcacion">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- SUB-CADENA 1: GRANEL -->
+        <mxCell id="subcadena-granel-title" value="SUB-CADENA 1: DISTRIBUCIÓN A GRANEL" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#b0e3e6;strokeColor=#0e8088;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="1200" width="480" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arrow-bif-granel" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;fillColor=#b0e3e6;strokeColor=#0e8088;" edge="1" parent="1" source="bifurcacion" target="dist-granel">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="320" y="1260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="dist-granel" value="&lt;b&gt;DISTRIBUCIÓN GRANEL&lt;/b&gt;&lt;br&gt;&lt;br&gt;Flota: 10 camiones graneleros&lt;br&gt;Capacidad: 3.5 - 12 TM&lt;br&gt;&lt;br&gt;Demanda: 7,270 TM/año" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b0e3e6;strokeColor=#0e8088;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="80" y="1260" width="240" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arrow-granel-clientes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;fillColor=#b0e3e6;strokeColor=#0e8088;" edge="1" parent="1" source="dist-granel" target="clientes-granel">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="clientes-granel" value="&lt;b&gt;CLIENTES GRANEL&lt;/b&gt;&lt;br&gt;&lt;br&gt;• Industriales&lt;br&gt;• Comerciales (cabañas, restaurantes)&lt;br&gt;• Servicios públicos (hospitales, escuelas)&lt;br&gt;• Residenciales alto consumo&lt;br&gt;&lt;br&gt;Tanques: 300 L - 7.5 m³&lt;br&gt;Capacidad total: 911 TM&lt;br&gt;Autonomía: 33 días" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d4edda;strokeColor=#0e8088;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="80" y="1420" width="240" height="180" as="geometry" />
+        </mxCell>
+
+        <!-- SUB-CADENA 2: ENVASADO -->
+        <mxCell id="subcadena-envasado-title" value="SUB-CADENA 2: DISTRIBUCIÓN ENVASADO" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffd9a0;strokeColor=#d6b656;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="640" y="1200" width="560" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arrow-bif-envasado" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;fillColor=#ffd9a0;strokeColor=#d6b656;" edge="1" parent="1" source="bifurcacion" target="dist-envasado">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="720" y="1260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="dist-envasado" value="&lt;b&gt;DISTRIBUCIÓN ENVASADO&lt;/b&gt;&lt;br&gt;&lt;br&gt;Flota: 12 camiones jaula&lt;br&gt;&lt;br&gt;Demanda: 7,791 TM/año&lt;br&gt;Formatos:&lt;br&gt;• 15 kg (58%)&lt;br&gt;• 45 kg (24%)&lt;br&gt;• 5 kg, 11 kg" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffd9a0;strokeColor=#d6b656;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="640" y="1260" width="220" height="160" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arrow-env-cdes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;fillColor=#ffd9a0;strokeColor=#d6b656;" edge="1" parent="1" source="dist-envasado" target="cdes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cdes" value="&lt;b&gt;CENTROS DISTRIBUCIÓN ENVASADO (CDE)&lt;/b&gt;&lt;br&gt;&lt;br&gt;Red: 46 CDEs en 7 de 10 comunas&lt;br&gt;Capacidad total: 161.3 TM&lt;br&gt;&lt;br&gt;Rutas:&lt;br&gt;• Norte (La Junta, Chaitén): 48-72h, 3x/mes&lt;br&gt;• Sur (Cochrane, Guadal): 48-72h, 3x/mes&lt;br&gt;• Pto Aysén: 8h, 3-4x/semana&lt;br&gt;• Coyhaique: diaria" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffd9a0;strokeColor=#d6b656;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="900" y="1260" width="300" height="160" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arrow-cdes-consumidor" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;fillColor=#ffd9a0;strokeColor=#d6b656;" edge="1" parent="1" source="cdes" target="consumidor-final">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="consumidor-final" value="&lt;b&gt;CONSUMIDOR FINAL&lt;/b&gt;&lt;br&gt;&lt;br&gt;• Compra directa en CDE&lt;br&gt;• Reparto a domicilio&lt;br&gt;&lt;br&gt;Inventario en hogares:&lt;br&gt;~2 cilindros/hogar&lt;br&gt;Total: ~660 TM&lt;br&gt;(último colchón de seguridad)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d4edda;strokeColor=#28a745;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="900" y="1460" width="300" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Vulnerabilidades Distribución -->
+        <mxCell id="vulnerabilidades-dist" value="&lt;b&gt;⚠️ VULNERABILIDADES DISTRIBUCIÓN&lt;/b&gt;&lt;br&gt;&lt;br&gt;• Cuesta Queulat (ruta norte)&lt;br&gt;• Cuesta del Diablo (ruta sur)&lt;br&gt;• Clima invernal&lt;br&gt;• Distancias largas (48-72h)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="360" y="1420" width="240" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- ETAPA 5: RESUMEN DEMANDA -->
+        <mxCell id="etapa5-title" value="ETAPA 5: DEMANDA TOTAL Y MÉTRICAS" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1660" width="1160" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="metricas-demanda" value="&lt;b&gt;DEMANDA TOTAL 2023: 15,061 TM&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Distribución:&lt;/b&gt;&lt;br&gt;• Granel: 7,270 TM/año (48.3%)&lt;br&gt;• Envasado: 7,791 TM/año (51.7%)&lt;br&gt;&lt;br&gt;&lt;b&gt;Capacidades de Almacenamiento:&lt;/b&gt;&lt;br&gt;1. Plantas Coyhaique: 431 TM (10.3 días)&lt;br&gt;2. Envasado en planta: 140 TM&lt;br&gt;3. Red CDEs: 161.3 TM&lt;br&gt;4. Clientes granel: 911 TM (33 días)&lt;br&gt;5. Hogares: ~660 TM&lt;br&gt;&lt;br&gt;&lt;b&gt;TOTAL ALMACENAMIENTO: ~2,303 TM&lt;/b&gt;&lt;br&gt;(Equivale a 56 días de demanda promedio)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;align=left;verticalAlign=top;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="80" y="1740" width="520" height="280" as="geometry" />
+        </mxCell>
+
+        <mxCell id="metricas-flota" value="&lt;b&gt;FLOTA Y TIEMPOS&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Transporte Primario:&lt;/b&gt;&lt;br&gt;• Camiones cisterna 22 TM: 7-18 unidades&lt;br&gt;• Tiempo viaje ENAP: 5.5-7.5 días (ida/vuelta)&lt;br&gt;• Distancia: 1,437 km (1,238 km Argentina)&lt;br&gt;&lt;br&gt;&lt;b&gt;Distribución Regional:&lt;/b&gt;&lt;br&gt;• Camiones granel (3.5-12 TM): 10 unidades&lt;br&gt;• Camiones jaula: 12 unidades&lt;br&gt;&lt;br&gt;&lt;b&gt;Tiempos Críticos:&lt;/b&gt;&lt;br&gt;• Rutas largas: 48-72 horas&lt;br&gt;• Puerto Aysén: 8 horas&lt;br&gt;• Coyhaique: distribución diaria" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;align=left;verticalAlign=top;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="640" y="1740" width="560" height="280" as="geometry" />
+        </mxCell>
+
+        <!-- LOGÍSTICA INVERSA (RETURN) -->
+        <mxCell id="return-flow" value="&lt;b&gt;LOGÍSTICA INVERSA (RETURN)&lt;/b&gt;&lt;br&gt;&lt;br&gt;Cilindros vacíos retornan desde:&lt;br&gt;• Consumidores finales → CDEs&lt;br&gt;• CDEs → Plantas Coyhaique&lt;br&gt;&lt;br&gt;Proceso:&lt;br&gt;• Inspección y mantenimiento&lt;br&gt;• Recertificación&lt;br&gt;• Re-envasado" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="360" y="1260" width="240" height="160" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arrow-return1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450;dashed=1;" edge="1" parent="1" source="consumidor-final" target="return-flow">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1050" y="1640" />
+              <mxPoint x="1270" y="1640" />
+              <mxPoint x="1270" y="1340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="arrow-return2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450;dashed=1;" edge="1" parent="1" source="return-flow" target="plantas-coyhaique">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="480" y="1200" />
+              <mxPoint x="220" y="1200" />
+              <mxPoint x="220" y="960" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- LEYENDA -->
+        <mxCell id="leyenda-title" value="LEYENDA" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="2080" width="280" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="leyenda-content" value="&lt;b&gt;Colores SCOR:&lt;/b&gt;&lt;br&gt;🟢 Plan (verde)&lt;br&gt;🔵 Source (azul)&lt;br&gt;🟡 Deliver (amarillo)&lt;br&gt;🔴 Return (rojo)&lt;br&gt;🟣 Enable (púrpura)&lt;br&gt;&lt;br&gt;→ Flujo directo&lt;br&gt;⇢ Flujo de retorno (dashed)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="40" y="2110" width="280" height="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="notas" value="&lt;b&gt;NOTAS IMPORTANTES:&lt;/b&gt;&lt;br&gt;&lt;br&gt;• TM = Toneladas Métricas&lt;br&gt;• Datos base año 2023&lt;br&gt;• Paso Huemules: único punto de ingreso&lt;br&gt;• Coyhaique: hub central obligatorio&lt;br&gt;• Estacionalidad crítica: demanda pico en agosto&lt;br&gt;• Sistema altamente vulnerable a disrupciones en transporte primario" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9e6;strokeColor=#d6b656;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="360" y="2080" width="840" height="210" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

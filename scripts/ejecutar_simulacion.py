@@ -381,32 +381,32 @@ def ejecutar(
     try:
         # Validar rutas de entrada
         if not config_path.exists():
-            typer.echo(f"❌ Archivo de configuración no encontrado: {config_path}", err=True)
+            typer.echo(f"Archivo de configuración no encontrado: {config_path}", err=True)
             raise typer.Exit(1)
         
         # Cargar y validar configuración
-        typer.echo("🔧 Cargando configuración...")
+        typer.echo("Cargando configuración...")
         config_manager = ConfiguracionSimulacion(config_path)
         config = config_manager.get_config()
         
-        typer.echo(f"✅ Configuración cargada y validada")
+        typer.echo(f"Configuración cargada y validada")
         typer.echo(f"   - Duración: {config['simulacion']['duracion']} horas")
         typer.echo(f"   - Camiones: {len(config['entidades'])} unidades")
         typer.echo(f"   - Semilla: {config['simulacion']['semilla_aleatoria']}")
         
         if dry_run:
-            typer.echo("🏁 Dry run completado - configuración válida")
+            typer.echo("Dry run completado - configuración válida")
             return
         
         # Crear y ejecutar simulación
-        typer.echo("🚀 Iniciando simulación...")
+        typer.echo("Iniciando simulación...")
         
         ejecutor = EjecutorSimulacion(config, output_path)
         ejecutor.preparar()
         ejecutor.ejecutar()
         ejecutor.guardar_resultados()
         
-        typer.echo("🎉 Simulación completada exitosamente")
+        typer.echo("Simulación completada exitosamente")
         typer.echo(f"   - Resultados guardados en: {output_path}")
         
         # Mostrar estadísticas básicas
@@ -414,14 +414,14 @@ def ejecutar(
         eventos_df = resultados['eventos']
         
         if not eventos_df.empty:
-            typer.echo("\n📊 Estadísticas básicas:")
+            typer.echo("\nEstadísticas básicas:")
             typer.echo(f"   - Total de eventos: {len(eventos_df)}")
             typer.echo(f"   - Tipos de eventos únicos: {eventos_df['event_type'].nunique()}")
             typer.echo(f"   - Entidades activas: {eventos_df['entity_id'].nunique()}")
             typer.echo(f"   - Rango temporal: {eventos_df['timestamp'].min().strftime('%Y-%m-%d %H:%M')} - {eventos_df['timestamp'].max().strftime('%Y-%m-%d %H:%M')}")
         
     except Exception as e:
-        typer.echo(f"❌ Error: {e}", err=True)
+        typer.echo(f"Error: {e}", err=True)
         if verbose:
             typer.echo(f"Detalles: {traceback.format_exc()}", err=True)
         raise typer.Exit(1)
@@ -438,18 +438,18 @@ def validar_config(
         config_manager = ConfiguracionSimulacion(config_path)
         config = config_manager.get_config()
         
-        typer.echo("✅ Configuración válida")
+        typer.echo("Configuración válida")
         
         # Mostrar resumen
         sim_config = config['simulacion']
-        typer.echo(f"\n📋 Resumen de configuración:")
+        typer.echo(f"\nResumen de configuración:")
         typer.echo(f"   - Duración: {sim_config['duracion']} horas")
         typer.echo(f"   - Semilla aleatoria: {sim_config['semilla_aleatoria']}")
         typer.echo(f"   - Número de camiones: {len(config['entidades'])}")
         typer.echo(f"   - Capacidad planta: {config['planta']['capacidad_maxima']}")
         
     except Exception as e:
-        typer.echo(f"❌ Configuración inválida: {e}", err=True)
+        typer.echo(f"Configuración inválida: {e}", err=True)
         raise typer.Exit(1)
 
 
