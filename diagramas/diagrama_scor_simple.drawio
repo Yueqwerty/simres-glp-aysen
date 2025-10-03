@@ -1,0 +1,108 @@
+<mxfile host="65bd71144e">
+    <diagram name="SCOR Simple - GLP Aysén" id="scor-simple">
+        <mxGraphModel dx="1269" dy="916" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=4;fillColor=#fff2cc;strokeColor=#d6b656;endArrow=block;endFill=1;fontSize=13;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="500" y="250" as="sourcePoint"/>
+                        <mxPoint x="660" y="320" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="580" y="250"/>
+                            <mxPoint x="580" y="321"/>
+                            <mxPoint x="630" y="321"/>
+                            <mxPoint x="630" y="320"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="titulo" value="Cadena de Suministro de GLP en la Región de Aysén" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="400" y="40" width="800" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="banner-scor" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=13;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="290" y="90" width="1000" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="scor-source-label" value="SOURCE" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontStyle=1;fontColor=#1e5a99;" parent="1" vertex="1">
+                    <mxGeometry x="295" y="105" width="280" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="scor-deliver-label" value="DELIVER" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontStyle=1;fontColor=#cc8800;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="105" width="420" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="scor-return-label" value="RETURN" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontStyle=1;fontColor=#cc0000;" parent="1" vertex="1">
+                    <mxGeometry x="1180" y="105" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="nodo-proveedores" value="&lt;b&gt;S1. PROVEEDORES EXTERNOS&lt;/b&gt;&lt;br&gt;&lt;br&gt;Chile: ENAP Cabo Negro&lt;br&gt;Región de Magallanes&lt;br&gt;Producto: Propano&lt;br&gt;&lt;br&gt;Argentina: YPF, Pluspetrol, Capex&lt;br&gt;Provincia de Neuquén" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;align=left;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="295" y="170" width="205" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="nodo-transporte" value="&lt;b&gt;S2. TRANSPORTE PRIMARIO&lt;/b&gt;&lt;br&gt;&lt;br&gt;Modo: Camiones cisterna granel&lt;br&gt;Capacidad: 22 toneladas métricas&lt;br&gt;Punto ingreso: Paso Huemules&lt;br&gt;Tiempo ciclo: 5.5 a 7.5 días&lt;br&gt;Distancia: aproximadamente 1,400 km&lt;br&gt;Flota variable: 7 a 18 unidades" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#b1ddf0;strokeColor=#10739e;fontSize=13;align=left;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="295" y="350" width="210" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="nodo-hub" value="&lt;b&gt;D1. HUB CENTRAL COYHAIQUE&lt;/b&gt;&lt;br&gt;&lt;br&gt;Operadores: Abastible, Gasco, Lipigas&lt;br&gt;Capacidad almacenamiento: 431 TM&lt;br&gt;Procesos: Recepción, almacenamiento&lt;br&gt;granel, envasado cilindros 5 a 45 kg&lt;br&gt;Autonomía: 8 a 10 días demanda" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;align=left;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="610" y="230" width="220" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=4;fillColor=#fff2cc;strokeColor=#d6b656;endArrow=block;endFill=1;fontSize=13;" parent="1" source="nodo-transporte" target="nodo-hub" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="580" y="440"/>
+                            <mxPoint x="580" y="320"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="nodo-granel" value="&lt;b&gt;D2a. DISTRIBUCIÓN A GRANEL&lt;/b&gt;&lt;br&gt;&lt;br&gt;Flota: 10 camiones graneleros&lt;br&gt;Capacidad: 3.5 a 12 TM por unidad&lt;br&gt;Volumen anual: 7,270 TM&lt;br&gt;Destino: Clientes industriales, comerciales&lt;br&gt;y residenciales alto consumo&lt;br&gt;Almacenamiento cliente: 911 TM en tanques" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;align=left;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="880" y="190" width="240" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="nodo-envasado" value="&lt;b&gt;D2b. DISTRIBUCIÓN ENVASADO&lt;/b&gt;&lt;br&gt;&lt;br&gt;Flota: 12 camiones tipo jaula&lt;br&gt;Volumen anual: 7,791 TM&lt;br&gt;Red: 46 Centros Distribución Envasado&lt;br&gt;ubicados en 7 de 10 comunas&lt;br&gt;Capacidad red CDEs: 161 TM&lt;br&gt;Inventario estimado hogares: 660 TM&lt;br&gt;Tiempo rutas: 8 a 72 horas según zona" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;align=left;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="880" y="390" width="240" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow3a" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;fillColor=#ffe6cc;strokeColor=#d79b00;endArrow=block;endFill=1;fontSize=13;" parent="1" source="nodo-hub" target="nodo-granel" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow3b" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;fillColor=#ffe6cc;strokeColor=#d79b00;endArrow=block;endFill=1;fontSize=13;" parent="1" source="nodo-hub" target="nodo-envasado" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="nodo-consumidores" value="&lt;b&gt;D3. CONSUMIDORES FINALES&lt;/b&gt;&lt;br&gt;&lt;br&gt;Demanda total anual: 15,061 TM&lt;br&gt;&lt;br&gt;Segmentos:&lt;br&gt;- Industrial y comercial&lt;br&gt;- Residencial&lt;br&gt;- Servicios públicos (hospitales,&lt;br&gt;  escuelas, instituciones)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;align=left;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="1180" y="280" width="200" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow4a" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;fillColor=#d5e8d4;strokeColor=#82b366;endArrow=block;endFill=1;fontSize=13;" parent="1" source="nodo-granel" target="nodo-consumidores" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow4b" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;fillColor=#d5e8d4;strokeColor=#82b366;endArrow=block;endFill=1;fontSize=13;" parent="1" source="nodo-envasado" target="nodo-consumidores" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow-return" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#b85450;endArrow=block;endFill=1;dashed=1;dashPattern=8 8;fontSize=13;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="nodo-consumidores" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1280" y="620"/>
+                            <mxPoint x="720" y="620"/>
+                        </Array>
+                        <mxPoint x="1360" y="490" as="sourcePoint"/>
+                        <mxPoint x="720" y="390" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="label-return" value="R1. Retorno cilindros vacíos para inspección y re-envasado" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=13;fontColor=#b85450;fontStyle=0;" parent="arrow-return" vertex="1" connectable="0">
+                    <mxGeometry x="-0.2" y="2" relative="1" as="geometry">
+                        <mxPoint x="-67" y="-7" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="arrow-plan" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#82b366;endArrow=none;endFill=0;dashed=1;dashPattern=1 4;startArrow=classic;startFill=1;fontSize=13;" parent="1" source="info-flow" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="200" y="170" as="sourcePoint"/>
+                        <mxPoint x="1560" y="170" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="leyenda" value="&lt;b&gt;Referencias:&lt;/b&gt; Flecha sólida indica flujo físico de GLP | Flecha discontinua indica flujo de retorno de cilindros vacíos | Línea punteada superior indica flujo bidireccional de información y planificación | TM = Toneladas Métricas | P = Plan, S = Source (Abastecimiento), D = Deliver (Distribución), R = Return (Retorno)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=13;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="295" y="540" width="390" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" value="" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#82b366;endArrow=none;endFill=0;dashed=1;dashPattern=1 4;startArrow=classic;startFill=1;fontSize=13;" parent="1" target="info-flow" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="200" y="170" as="sourcePoint"/>
+                        <mxPoint x="1560" y="170" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="info-flow" value="P1. Planificación demanda, gestión inventarios, coordinación flota (flujo bidireccional de información)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontStyle=2;fontColor=#2d7c2d;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="160" width="1360" height="20" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

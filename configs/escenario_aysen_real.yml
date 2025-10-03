@@ -34,9 +34,6 @@ demanda:
   consumo_per_capita_anual: 24.5  # kg GLP per capita
   estacionalidad_invernal: 1.4  # 40% más demanda en invierno
   
-# ========================================================================
-# CONFIGURACIÓN DE RIESGOS REALES DEL ESTUDIO
-# ========================================================================
 riesgos:
   # RIESGOS DE NIVEL ALTO (Prioridad máxima)
   "8-PT-SC":  # Cierre Puerto por Mal tiempo

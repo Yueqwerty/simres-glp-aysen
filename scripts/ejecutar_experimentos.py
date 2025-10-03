@@ -64,17 +64,17 @@ def ejecutar_paralelo(
     if max_workers is None:
         max_workers = min(32, mp.cpu_count())
     
-    typer.echo(f"🚀 Iniciando experimentos paralelos con {max_workers} workers")
+    typer.echo(f"Iniciando experimentos paralelos con {max_workers} workers")
     
     # Crear directorio de resultados
     results_dir.mkdir(parents=True, exist_ok=True)
     
     # Obtener archivos de configuración
     config_files = list(configs_dir.glob("*.yaml")) + list(configs_dir.glob("*.yml"))
-    typer.echo(f"📁 Encontrados {len(config_files)} archivos de configuración")
+    typer.echo(f"Encontrados {len(config_files)} archivos de configuración")
     
     if not config_files:
-        typer.echo("❌ No se encontraron archivos de configuración", err=True)
+        typer.echo("No se encontraron archivos de configuración", err=True)
         raise typer.Exit(1)
     
     # Ejecutar en paralelo con barra de progreso
@@ -98,9 +98,9 @@ def ejecutar_paralelo(
                     
                     # Actualizar barra de progreso
                     if resultado["status"] == "success":
-                        pbar.set_postfix({"✅": config_name[:20]})
+                        pbar.set_postfix({"status": "success", "config": config_name[:20]})
                     else:
-                        pbar.set_postfix({"❌": config_name[:20]})
+                        pbar.set_postfix({"status": "error", "config": config_name[:20]})
                     
                     pbar.update(1)
                     
@@ -110,7 +110,7 @@ def ejecutar_paralelo(
                         "status": "timeout_error", 
                         "error": str(e)
                     })
-                    pbar.set_postfix({"⏰": config_name[:20]})
+                    pbar.set_postfix({"status": "timeout", "config": config_name[:20]})
                     pbar.update(1)
     
     # Calcular estadísticas finales
@@ -118,11 +118,11 @@ def ejecutar_paralelo(
     exitosos = sum(1 for r in resultados if r["status"] == "success")
     errores = len(resultados) - exitosos
     
-    typer.echo(f"\n🎉 Experimentos completados en {tiempo_total:.1f} segundos")
-    typer.echo(f"✅ Experimentos exitosos: {exitosos}/{len(resultados)}")
+    typer.echo(f"\nExperimentos completados en {tiempo_total:.1f} segundos")
+    typer.echo(f"Experimentos exitosos: {exitosos}/{len(resultados)}")
     
     if errores > 0:
-        typer.echo(f"❌ Experimentos con errores: {errores}")
+        typer.echo(f"Experimentos con errores: {errores}")
         
         # Mostrar detalles de errores
         for resultado in resultados:
@@ -149,7 +149,7 @@ def ejecutar_paralelo(
     with open(reporte_path, 'w') as f:
         json.dump(reporte, f, indent=2)
     
-    typer.echo(f"📄 Reporte guardado en: {reporte_path}")
+    typer.echo(f"Reporte guardado en: {reporte_path}")
 
 
 @app.command() 
@@ -161,10 +161,10 @@ def generar_factorial(
 ) -> None:
     """Genera diseño factorial de experimentos."""
     
-    typer.echo("🧬 Generando diseño factorial de experimentos...")
+    typer.echo("Generando diseño factorial de experimentos...")
     
     if not base_config.exists():
-        typer.echo(f"❌ Configuración base no encontrada: {base_config}", err=True)
+        typer.echo(f"Configuración base no encontrada: {base_config}", err=True)
         raise typer.Exit(1)
     
     # Crear directorio de salida
@@ -191,10 +191,10 @@ def generar_factorial(
             factores_dict[nombre.strip()] = valores_procesados
     
     except Exception as e:
-        typer.echo(f"❌ Error parseando factores: {e}", err=True)
+        typer.echo(f"Error parseando factores: {e}", err=True)
         raise typer.Exit(1)
     
-    typer.echo(f"📊 Factores identificados: {factores_dict}")
+    typer.echo(f"Factores identificados: {factores_dict}")
     
     # Generar todas las combinaciones
     import itertools
@@ -208,7 +208,7 @@ def generar_factorial(
     valores_factores = list(factores_dict.values())
     
     combinaciones = list(itertools.product(*valores_factores))
-    typer.echo(f"🔢 Generando {len(combinaciones)} combinaciones factoriales")
+    typer.echo(f"Generando {len(combinaciones)} combinaciones factoriales")
     
     # Generar configuraciones
     for i, combinacion in enumerate(combinaciones):
@@ -258,7 +258,7 @@ def generar_factorial(
         with open(archivo_salida, 'w') as f:
             yaml.dump(config_experimento, f, indent=2, default_flow_style=False)
     
-    typer.echo(f"✅ Generadas {len(combinaciones)} configuraciones en {output_dir}")
+    typer.echo(f"Generadas {len(combinaciones)} configuraciones en {output_dir}")
 
 
 @app.command()
@@ -270,18 +270,18 @@ def ejecutar_individual(
     """Ejecuta un experimento individual."""
     
     if verbose:
-        typer.echo(f"🔧 Ejecutando experimento individual")
+        typer.echo(f"Ejecutando experimento individual")
         typer.echo(f"   - Configuración: {config_path}")
         typer.echo(f"   - Salida: {output_path}")
     
     resultado = ejecutar_experimento_worker(config_path, output_path)
     
     if resultado["status"] == "success":
-        typer.echo("✅ Experimento completado exitosamente")
+        typer.echo("Experimento completado exitosamente")
         if verbose and "output" in resultado:
             typer.echo(f"Salida: {resultado['output']}")
     else:
-        typer.echo(f"❌ Error en experimento: {resultado.get('error', 'Error desconocido')}", err=True)
+        typer.echo(f"Error en experimento: {resultado.get('error', 'Error desconocido')}", err=True)
         raise typer.Exit(1)
 
 

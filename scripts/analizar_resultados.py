@@ -42,10 +42,6 @@ app = typer.Typer(
     add_completion=False
 )
 
-# ============================================================================
-# CLASES DE SOPORTE PARA ANÁLISIS AVANZADO
-# ============================================================================
-
 class KernelCLoader:
     """
     Cargador inteligente del kernel en C con detección automática de plataforma.
@@ -1040,10 +1036,10 @@ def stats(
     """
     Análisis estadístico cuantitativo y de sensibilidad sobre KPIs agregados.
     """
-    typer.echo(f"🔍 Analizando estadísticas en: {results_dir}")
+    typer.echo(f"Analizando estadísticas en: {results_dir}")
     
     if not results_dir.exists():
-        typer.echo(f"❌ Directorio no encontrado: {results_dir}", err=True)
+        typer.echo(f"Directorio no encontrado: {results_dir}", err=True)
         raise typer.Exit(1)
     
     try:
@@ -1053,10 +1049,10 @@ def stats(
             result_files = list(results_dir.glob("*.json"))
         
         if not result_files:
-            typer.echo("❌ No se encontraron archivos de resultados", err=True)
+            typer.echo("No se encontraron archivos de resultados", err=True)
             raise typer.Exit(1)
         
-        typer.echo(f"📁 Encontrados {len(result_files)} archivos de resultados")
+        typer.echo(f"Encontrados {len(result_files)} archivos de resultados")
         
         # Procesar archivos y extraer KPIs
         all_kpis = []
@@ -1092,7 +1088,7 @@ def stats(
                 continue
         
         if not all_kpis:
-            typer.echo("❌ No se pudieron extraer KPIs de los archivos", err=True)
+            typer.echo("No se pudieron extraer KPIs de los archivos", err=True)
             raise typer.Exit(1)
         
         df_kpis = pd.DataFrame(all_kpis)
@@ -1118,14 +1114,14 @@ def stats(
         # Guardar resultados
         guardar_resultados_stats(results, output_path, format_output)
         
-        typer.echo(f"✅ Análisis de estadísticas completado")
-        typer.echo(f"📄 Resultados guardados en: {output_path}")
+        typer.echo(f"Análisis de estadísticas completado")
+        typer.echo(f"Resultados guardados en: {output_path}")
         
         # Mostrar resumen
         mostrar_resumen_stats(stats_analysis)
         
     except Exception as e:
-        typer.echo(f"❌ Error en análisis de estadísticas: {e}", err=True)
+        typer.echo(f"Error en análisis de estadísticas: {e}", err=True)
         raise typer.Exit(1)
 
 
@@ -1140,36 +1136,36 @@ def cluster(
     """
     Clustering de arquetipos de fallo usando técnicas avanzadas de ML.
     """
-    typer.echo(f"🤖 Iniciando clustering de arquetipos de fallo")
-    typer.echo(f"📁 Directorio de resultados: {results_dir}")
-    typer.echo(f"🔧 Algoritmo: {algorithm}, Vectorización: {vectorization}")
+    typer.echo(f"Iniciando clustering de arquetipos de fallo")
+    typer.echo(f"Directorio de resultados: {results_dir}")
+    typer.echo(f"Algoritmo: {algorithm}, Vectorización: {vectorization}")
     
     if not results_dir.exists():
-        typer.echo(f"❌ Directorio no encontrado: {results_dir}", err=True)
+        typer.echo(f"Directorio no encontrado: {results_dir}", err=True)
         raise typer.Exit(1)
     
     output_dir.mkdir(parents=True, exist_ok=True)
     
     try:
         # Extraer secuencias de eventos de fallo
-        typer.echo("🔍 Extrayendo secuencias de eventos de fallo...")
+        typer.echo("Extrayendo secuencias de eventos de fallo...")
         secuencias_fallo = extraer_secuencias_fallo(results_dir, min_failure_events)
         
         if len(secuencias_fallo) < 2:
-            typer.echo(f"❌ Muy pocas secuencias de fallo encontradas: {len(secuencias_fallo)}", err=True)
+            typer.echo(f"Muy pocas secuencias de fallo encontradas: {len(secuencias_fallo)}", err=True)
             raise typer.Exit(1)
         
-        typer.echo(f"📊 Encontradas {len(secuencias_fallo)} secuencias de fallo")
+        typer.echo(f"Encontradas {len(secuencias_fallo)} secuencias de fallo")
         
         # Inicializar clusterizador
         clusterizador = ClusterizadorFallos()
         
         # Preparar datos
-        typer.echo("🔄 Vectorizando secuencias...")
+        typer.echo("Vectorizando secuencias...")
         feature_matrix = clusterizador.preparar_datos_secuencias(secuencias_fallo, vectorization)
         
         # Aplicar algoritmo de clustering
-        typer.echo(f"🎯 Aplicando {algorithm.upper()}...")
+        typer.echo(f"Aplicando {algorithm.upper()}...")
         
         if algorithm.lower() == 'dbscan':
             # Optimizar parámetros de DBSCAN
@@ -1199,11 +1195,11 @@ def cluster(
         elif algorithm.lower() == 'kmeans':
             clustering_result = clusterizador.clustering_kmeans()
         else:
-            typer.echo(f"❌ Algoritmo no soportado: {algorithm}", err=True)
+            typer.echo(f"Algoritmo no soportado: {algorithm}", err=True)
             raise typer.Exit(1)
         
         # Generar embedding 2D para visualización
-        typer.echo("📈 Generando embedding 2D...")
+        typer.echo("Generando embedding 2D...")
         try:
             embedding_2d = clusterizador.generar_embedding_2d('tsne')
             clustering_result['embedding_2d'] = embedding_2d.tolist()
@@ -1235,14 +1231,14 @@ def cluster(
             output_dir / f"secuencias_por_cluster_{algorithm}.json"
         )
         
-        typer.echo("✅ Clustering completado exitosamente")
-        typer.echo(f"📄 Resultados guardados en: {results_file}")
+        typer.echo("Clustering completado exitosamente")
+        typer.echo(f"Resultados guardados en: {results_file}")
         
         # Mostrar resumen
         mostrar_resumen_clustering(clustering_result)
         
     except Exception as e:
-        typer.echo(f"❌ Error en clustering: {e}", err=True)
+        typer.echo(f"Error en clustering: {e}", err=True)
         raise typer.Exit(1)
 
 
@@ -1256,11 +1252,11 @@ def graph(
     """
     Análisis avanzado de grafos de transición usando el kernel optimizado en C.
     """
-    typer.echo(f"📊 Iniciando análisis de grafos de transición")
-    typer.echo(f"🔧 Kernel en C + NetworkX para análisis optimizado")
+    typer.echo(f"Iniciando análisis de grafos de transición")
+    typer.echo(f"Kernel en C + NetworkX para análisis optimizado")
     
     if not results_dir.exists():
-        typer.echo(f"❌ Directorio no encontrado: {results_dir}", err=True)
+        typer.echo(f"Directorio no encontrado: {results_dir}", err=True)
         raise typer.Exit(1)
     
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -1268,14 +1264,14 @@ def graph(
     try:
         analizador = AnalizadorSecuencias()
         
-        typer.echo("🔍 Extrayendo secuencias de eventos...")
+        typer.echo("Extrayendo secuencias de eventos...")
         secuencias_eventos = extraer_secuencias_eventos(results_dir, max_sequences)
         
         if not secuencias_eventos:
-            typer.echo("❌ No se encontraron secuencias de eventos", err=True)
+            typer.echo("No se encontraron secuencias de eventos", err=True)
             raise typer.Exit(1)
         
-        typer.echo(f"📊 Analizando {len(secuencias_eventos)} secuencias")
+        typer.echo(f"Analizando {len(secuencias_eventos)} secuencias")
         
         grafos_resultados = []
         
@@ -1309,15 +1305,15 @@ def graph(
                     continue
         
         if not grafos_resultados:
-            typer.echo("❌ No se pudieron analizar las secuencias", err=True)
+            typer.echo("No se pudieron analizar las secuencias", err=True)
             raise typer.Exit(1)
         
         # Análisis agregado
-        typer.echo("📊 Realizando análisis agregado...")
+        typer.echo("Realizando análisis agregado...")
         analisis_agregado = realizar_analisis_agregado_grafos(grafos_resultados)
         
         # Crear grafo agregado
-        typer.echo("🔗 Construyendo grafo agregado...")
+        typer.echo("Construyendo grafo agregado...")
         grafo_agregado = construir_grafo_agregado(secuencias_eventos, analizador)
         
         if grafo_agregado.number_of_nodes() > 0:
@@ -1356,16 +1352,16 @@ def graph(
         if 'grafo_completo' in analisis_agregado:
             grafo_file = output_dir / "grafo_agregado.gexf"
             nx.write_gexf(grafo_agregado, grafo_file)
-            typer.echo(f"📈 Grafo agregado guardado en: {grafo_file}")
+            typer.echo(f"Grafo agregado guardado en: {grafo_file}")
         
-        typer.echo("✅ Análisis de grafos completado exitosamente")
-        typer.echo(f"📄 Resultados guardados en: {output_file}")
+        typer.echo("Análisis de grafos completado exitosamente")
+        typer.echo(f"Resultados guardados en: {output_file}")
         
         # Mostrar resumen
         mostrar_resumen_grafos(analisis_agregado)
         
     except Exception as e:
-        typer.echo(f"❌ Error en análisis de grafos: {e}", err=True)
+        typer.echo(f"Error en análisis de grafos: {e}", err=True)
         raise typer.Exit(1)
 
 
@@ -1380,22 +1376,22 @@ def stats_anova(
     Análisis ANOVA factorial avanzado para identificar factores significativos.
     """
     
-    typer.echo("🔬 Iniciando análisis ANOVA factorial avanzado")
+    typer.echo("Iniciando análisis ANOVA factorial avanzado")
     
     if not results_dir.exists():
-        typer.echo(f"❌ Directorio no encontrado: {results_dir}", err=True)
+        typer.echo(f"Directorio no encontrado: {results_dir}", err=True)
         raise typer.Exit(1)
     
     try:
         # Cargar datos experimentales
-        typer.echo("📊 Cargando datos experimentales...")
+        typer.echo("Cargando datos experimentales...")
         df_resultados = cargar_datos_experimentales(results_dir)
         
         if df_resultados.empty:
-            typer.echo("❌ No se encontraron datos válidos para análisis", err=True)
+            typer.echo("No se encontraron datos válidos para análisis", err=True)
             raise typer.Exit(1)
         
-        typer.echo(f"✅ Datos cargados: {len(df_resultados)} experimentos")
+        typer.echo(f"Datos cargados: {len(df_resultados)} experimentos")
         
         # Procesar factores
         if factores:
@@ -1405,8 +1401,8 @@ def stats_anova(
         
         variables_respuesta = auto_detectar_variables_respuesta(df_resultados)
         
-        typer.echo(f"🔧 Factores identificados: {lista_factores}")
-        typer.echo(f"📈 Variables de respuesta: {variables_respuesta}")
+        typer.echo(f"Factores identificados: {lista_factores}")
+        typer.echo(f"Variables de respuesta: {variables_respuesta}")
         
         # Realizar análisis ANOVA
         analizador = AnalizadorANOVA(alpha=alpha)
@@ -1418,14 +1414,14 @@ def stats_anova(
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(serializar_para_json(resultados_anova), f, indent=2, ensure_ascii=False)
         
-        typer.echo("✅ Análisis ANOVA completado exitosamente")
-        typer.echo(f"📄 Resultados guardados en: {output_path}")
+        typer.echo("Análisis ANOVA completado exitosamente")
+        typer.echo(f"Resultados guardados en: {output_path}")
         
         # Mostrar resumen
         mostrar_resumen_anova(resultados_anova)
         
     except Exception as e:
-        typer.echo(f"❌ Error en análisis ANOVA: {e}", err=True)
+        typer.echo(f"Error en análisis ANOVA: {e}", err=True)
         raise typer.Exit(1)
 
 
@@ -1904,21 +1900,21 @@ def auto_detectar_variables_respuesta(df: pd.DataFrame) -> List[str]:
 def mostrar_resumen_stats(stats_analysis: Dict[str, Any]) -> None:
     """Muestra resumen de análisis estadístico en la terminal."""
     if 'descriptivas' in stats_analysis:
-        typer.echo("\n📊 Resumen Estadístico:")
+        typer.echo("\nResumen Estadístico:")
         for kpi, stats in list(stats_analysis['descriptivas'].items())[:5]:
             typer.echo(f"  {kpi}:")
             typer.echo(f"    Media: {stats['mean']:.3f}, Std: {stats['std']:.3f}")
             typer.echo(f"    Rango: [{stats['min']:.3f}, {stats['max']:.3f}]")
     
     if 'correlaciones_altas' in stats_analysis:
-        typer.echo(f"\n🔗 Correlaciones altas encontradas: {len(stats_analysis['correlaciones_altas'])}")
+        typer.echo(f"\nCorrelaciones altas encontradas: {len(stats_analysis['correlaciones_altas'])}")
         for corr in stats_analysis['correlaciones_altas'][:3]:
             typer.echo(f"  {corr['variable1']} <-> {corr['variable2']}: {corr['correlation']:.3f}")
 
 
 def mostrar_resumen_clustering(clustering_result: Dict[str, Any]) -> None:
     """Muestra resumen de clustering en la terminal."""
-    typer.echo(f"\n🎯 Resultado del Clustering ({clustering_result['algoritmo']}):")
+    typer.echo(f"\nResultado del Clustering ({clustering_result['algoritmo']}):")
     typer.echo(f"  Clusters encontrados: {clustering_result['n_clusters']}")
     
     if 'n_noise_points' in clustering_result:
@@ -1928,7 +1924,7 @@ def mostrar_resumen_clustering(clustering_result: Dict[str, Any]) -> None:
         typer.echo(f"  Silhouette Score: {clustering_result['silhouette_score']:.3f}")
     
     if 'cluster_info' in clustering_result:
-        typer.echo("\n📋 Información de Clusters:")
+        typer.echo("\nInformación de Clusters:")
         for cluster_name, info in list(clustering_result['cluster_info'].items())[:3]:
             typer.echo(f"  {cluster_name}: {info['size']} elementos ({info['percentage']:.1f}%)")
 
@@ -1937,14 +1933,14 @@ def mostrar_resumen_grafos(analisis_agregado: Dict[str, Any]) -> None:
     """Muestra resumen de análisis de grafos en la terminal."""
     if 'estadisticas_grafos' in analisis_agregado:
         stats = analisis_agregado['estadisticas_grafos']
-        typer.echo(f"\n📈 Análisis de Grafos:")
+        typer.echo(f"\nAnálisis de Grafos:")
         typer.echo(f"  Grafos analizados: {stats['total_grafos_analizados']}")
         typer.echo(f"  Promedio nodos: {stats['promedio_nodos']:.1f}")
         typer.echo(f"  Promedio aristas: {stats['promedio_aristas']:.1f}")
         typer.echo(f"  Grafos con ciclos: {stats['porcentaje_con_ciclos']:.1f}%")
     
     if 'nodos_mas_criticos_globalmente' in analisis_agregado:
-        typer.echo(f"\n⭐ Nodos más críticos:")
+        typer.echo(f"\nNodos más críticos:")
         for nodo, frecuencia in analisis_agregado['nodos_mas_criticos_globalmente'][:3]:
             typer.echo(f"  Nodo {nodo}: {frecuencia} apariciones")
 
@@ -1955,26 +1951,26 @@ def mostrar_resumen_anova(resultados: Dict[str, Any]) -> None:
     resumen = resultados.get('resumen_significancia', {})
     config = resultados.get('configuracion', {})
     
-    typer.echo(f"\n🔬 Resumen ANOVA (α = {config.get('alpha', 0.05)}):")
+    typer.echo(f"\nResumen ANOVA (α = {config.get('alpha', 0.05)}):")
     typer.echo(f"   - Experimentos analizados: {config.get('tamaño_muestra', 0)}")
     typer.echo(f"   - Factores evaluados: {config.get('num_factores', 0)}")
     typer.echo(f"   - Variables de respuesta: {config.get('num_variables_respuesta', 0)}")
     
     factores_influyentes = resumen.get('factores_mas_influyentes', {})
     if factores_influyentes:
-        typer.echo(f"\n⭐ Factores más influyentes:")
+        typer.echo(f"\nFactores más influyentes:")
         for factor, count in list(factores_influyentes.items())[:3]:
             typer.echo(f"   - {factor}: significativo en {count} variables")
     
     interacciones = resumen.get('interacciones_importantes', {})
     if interacciones:
-        typer.echo(f"\n🔗 Interacciones significativas:")
+        typer.echo(f"\nInteracciones significativas:")
         for interaccion, count in list(interacciones.items())[:2]:
             typer.echo(f"   - {interaccion}: detectada en {count} variables")
     
     recomendaciones = resultados.get('recomendaciones', [])
     if recomendaciones:
-        typer.echo(f"\n💡 Recomendaciones:")
+        typer.echo(f"\nRecomendaciones:")
         for i, recomendacion in enumerate(recomendaciones[:3], 1):
             typer.echo(f"   {i}. {recomendacion}")
 
