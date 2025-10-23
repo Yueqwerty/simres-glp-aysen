@@ -1,8 +1,5 @@
 """
-Modelo SIMPLIFICADO de simulación para prueba de hipótesis de tesis.
-Enfoque: Probar sensibilidad de resiliencia a factores exógenos vs endógenos.
-
-Sistema minimal:
+Sistema:
 - Hub Coyhaique (inventario único)
 - Demanda estocástica (clientes agregados)
 - Ruta de suministro con disrupciones
@@ -34,32 +31,61 @@ class MetricasDiarias:
 
 @dataclass
 class ConfiguracionSimulacion:
-    """Parámetros de configuración del sistema."""
-    # Parámetros ENDÓGENOS (controlables)
-    capacidad_hub_tm: float = 431.0  # Status quo Aysén
-    punto_reorden_tm: float = 216.0  # 50% de capacidad
-    cantidad_pedido_tm: float = 216.0  # Tamaño fijo de pedido (Q)
-    inventario_inicial_tm: float = 258.0  # 60% inicial
+    """
+    Parámetros de configuración del sistema.
+
+    FUENTES DE DATOS:
+    - Informe CNE 2024: Vulnerabilidad de Suministro de GLP en Aysén
+    - Datos operativos distribuidores (Abastible, Lipigas, Gasco)
+    """
+    # Parámetros ENDÓGENOS (controlables por inversión/política)
+    capacidad_hub_tm: float = 431.0  # Status quo Aysén (150+240+41 TM)
+    punto_reorden_tm: float = 216.0  # 50% de capacidad (política conservadora)
+    cantidad_pedido_tm: float = 216.0  # Tamaño fijo de pedido Q (política Q,R)
+    inventario_inicial_tm: float = 258.0  # 60% inicial (arranque realista)
 
     # Parámetros de demanda
-    # Ajustado para obtener autonomía ~8.2 días: 431 TM / 52.5 TM/día = 8.2 días
-    # Pero con estacionalidad promedio ~1.0 (no siempre en pico), usamos factor menor
-    demanda_base_diaria_tm: float = 52.5  # Demanda promedio diaria
-    factor_estacionalidad: float = 1.4  # Pico invernal (pero promedio anual ~1.0)
-    variabilidad_demanda: float = 0.1  # ±10%
+    # FUENTE: Informe CNE 2024 - Aysén
+    # Demanda anual 2023: 19.088 TM → 52.3 TM/día promedio
+    # Mes mayor consumo (julio 2023): 1.586 TM → 51.2 TM/día
+    # Calibrado para autonomía status quo: 431 TM / 52.5 TM/día ≈ 8.2 días
+    demanda_base_diaria_tm: float = 52.5  # Demanda promedio diaria (TM)
+    variabilidad_demanda: float = 0.15  # ±15% variabilidad estocástica
 
     # Parámetros de suministro
-    lead_time_nominal_dias: float = 3.0  # Tiempo normal de entrega
+    # FUENTE: Datos operativos distribuidores
+    # Ruta Cabo Negro-Coyhaique: 5.5-7.5 días round trip
+    # Ruta Neuquén-Coyhaique: similar
+    # Simplificado a lead time promedio de entrega
+    lead_time_nominal_dias: float = 6.0  # Tiempo normal de entrega (round trip promedio)
 
     # Parámetros EXÓGENOS (disrupciones - NO controlables)
-    tasa_disrupciones_anual: float = 4.0  # λ para Poisson
-    duracion_disrupcion_min_dias: float = 3.0
+    # FUENTE: Informe CNE 2024 - Matriz de Riesgos
+    # Frecuencia Nivel 4: 4 eventos/año (nevadas, conflictos)
+    # Duración histórica: 3-21 días (conflicto Argentina 2021: 21 días)
+    tasa_disrupciones_anual: float = 4.0  # λ para Poisson (Nivel 4)
+    duracion_disrupcion_min_dias: float = 3.0  # Mínimo histórico
     duracion_disrupcion_mode_dias: float = 7.0  # Valor más probable
-    duracion_disrupcion_max_dias: float = 21.0  # Caso extremo Argentina
+    duracion_disrupcion_max_dias: float = 21.0  # Máximo histórico (Argentina)
 
     # Control de simulación
     duracion_simulacion_dias: int = 365
     semilla_aleatoria: int = 42
+
+    def validar(self) -> None:
+        """Valida que los parámetros sean consistentes."""
+        assert self.capacidad_hub_tm > 0, "Capacidad debe ser positiva"
+        assert self.punto_reorden_tm < self.capacidad_hub_tm, "ROP debe ser < capacidad"
+        assert self.cantidad_pedido_tm > 0, "Cantidad de pedido debe ser positiva"
+        assert self.inventario_inicial_tm <= self.capacidad_hub_tm, "Inventario inicial debe ser ≤ capacidad"
+        assert self.demanda_base_diaria_tm > 0, "Demanda base debe ser positiva"
+        assert 0 <= self.variabilidad_demanda < 1, "Variabilidad debe estar en [0,1)"
+        assert self.lead_time_nominal_dias > 0, "Lead time debe ser positivo"
+        assert self.tasa_disrupciones_anual >= 0, "Tasa de disrupciones debe ser ≥ 0"
+        assert self.duracion_disrupcion_min_dias >= 0, "Duración mínima debe ser ≥ 0"
+        assert self.duracion_disrupcion_min_dias <= self.duracion_disrupcion_mode_dias <= self.duracion_disrupcion_max_dias, \
+            "Duraciones deben cumplir: min ≤ mode ≤ max"
+        assert self.duracion_simulacion_dias > 0, "Duración de simulación debe ser positiva"
 
 
 class HubCoyhaique:
@@ -218,16 +244,18 @@ class SimulacionMinimal:
             # Calcular demanda del día
             demanda_base = self.config.demanda_base_diaria_tm
 
-            # Factor estacional (pico en invierno austral: junio-agosto)
-            # Ajustado para que el promedio anual sea ~1.0
+            # Factor estacional (pico en invierno austral: junio-julio-agosto)
+            # FUENTE: Informe CNE - Mes de mayor consumo (julio): ~1.5x promedio anual
+            # Senoidal centrada en 1.0 para mantener promedio anual = demanda_base
             dia_del_anio = dia % 365
-            # Senoidal centrada en 1.0, con amplitud que da pico de 1.3 y valle de 0.7
-            factor_estacional = 1.0 + 0.3 * np.sin(2 * np.pi * (dia_del_anio - 172) / 365.0)
+            # Invierno austral: día 172 (21 junio) a día 264 (21 septiembre)
+            # Pico en día ~200 (julio)
+            factor_estacional = 1.0 + 0.25 * np.sin(2 * np.pi * (dia_del_anio - 172) / 365.0)
 
-            # Variabilidad aleatoria
+            # Variabilidad aleatoria (ruido estocástico diario)
             ruido = self.rng.normal(1.0, self.config.variabilidad_demanda)
 
-            demanda_dia = demanda_base * factor_estacional * ruido
+            demanda_dia = max(0.0, demanda_base * factor_estacional * ruido)
 
             # Intentar satisfacer demanda
             despachado = self.hub.despachar_a_clientes(demanda_dia)
@@ -285,6 +313,9 @@ class SimulacionMinimal:
 
     def _llegada_suministro(self, cantidad_tm: float, lead_time_dias: float):
         """Simula la llegada de un pedido después del lead time."""
+        # Guardar referencia al evento actual
+        evento_actual = self.env.active_process
+
         yield self.env.timeout(lead_time_dias)
 
         # Llegó el suministro
@@ -295,12 +326,13 @@ class SimulacionMinimal:
             self.metricas_diarias[-1].suministro_recibido_tm += cantidad_tm
 
         logger.info(
-            f"Día {self.env.now:.0f}: Suministro recibido - {cantidad_tm:.0f} TM"
+            f"Día {self.env.now:.0f}: Suministro recibido - {cantidad_tm:.0f} TM, "
+            f"Inventario actual: {self.hub.inventario.level:.1f} TM"
         )
 
         # Remover de pedidos en tránsito
-        if self in self.pedidos_en_transito:
-            self.pedidos_en_transito.remove(self)
+        if evento_actual in self.pedidos_en_transito:
+            self.pedidos_en_transito.remove(evento_actual)
 
     def _proceso_disrupciones(self):
         """
@@ -327,8 +359,14 @@ class SimulacionMinimal:
             self.ruta.bloquear_por_disrupcion(duracion)
 
     def calcular_kpis(self) -> Dict[str, Any]:
-        """Calcula los KPIs principales para análisis."""
+        """
+        Calcula los KPIs principales para análisis de resiliencia.
+
+        Returns:
+            Diccionario con métricas de rendimiento del sistema.
+        """
         # Nivel de Servicio (métrica principal de resiliencia)
+        # NS = Demanda satisfecha / Demanda total
         nivel_servicio_pct = (
             (self.demanda_satisfecha_tm / self.demanda_total_tm * 100.0)
             if self.demanda_total_tm > 0 else 0.0
@@ -336,29 +374,55 @@ class SimulacionMinimal:
 
         # Contar días con quiebre de stock
         dias_con_quiebre = sum(1 for m in self.metricas_diarias if m.quiebre_stock)
+        dias_totales = len(self.metricas_diarias)
 
-        # Inventario promedio y mínimo
+        # Inventario: estadísticas descriptivas
         inventarios = [m.inventario_tm for m in self.metricas_diarias]
         inventario_promedio = np.mean(inventarios) if inventarios else 0.0
         inventario_minimo = np.min(inventarios) if inventarios else 0.0
+        inventario_maximo = np.max(inventarios) if inventarios else 0.0
+        inventario_std = np.std(inventarios) if inventarios else 0.0
+
+        # Demanda: estadísticas
+        demandas = [m.demanda_tm for m in self.metricas_diarias]
+        demanda_promedio = np.mean(demandas) if demandas else 0.0
+        demanda_maxima = np.max(demandas) if demandas else 0.0
+
+        # Autonomía promedio (días de inventario)
+        autonomia_promedio_dias = (
+            inventario_promedio / demanda_promedio
+            if demanda_promedio > 0 else 0.0
+        )
 
         return {
-            # KPI PRINCIPAL
-            'nivel_servicio_pct': nivel_servicio_pct,
-
-            # KPIs secundarios
-            'probabilidad_quiebre_stock_pct': (dias_con_quiebre / len(self.metricas_diarias) * 100.0),
+            # ========== KPIs PRINCIPALES (para prueba de hipótesis) ==========
+            'nivel_servicio_pct': round(nivel_servicio_pct, 2),
+            'probabilidad_quiebre_stock_pct': round((dias_con_quiebre / dias_totales * 100.0), 2),
             'dias_con_quiebre': dias_con_quiebre,
-            'inventario_promedio_tm': inventario_promedio,
-            'inventario_minimo_tm': inventario_minimo,
 
-            # Métricas de disrupciones
+            # ========== MÉTRICAS DE INVENTARIO ==========
+            'inventario_promedio_tm': round(inventario_promedio, 2),
+            'inventario_minimo_tm': round(inventario_minimo, 2),
+            'inventario_maximo_tm': round(inventario_maximo, 2),
+            'inventario_std_tm': round(inventario_std, 2),
+            'autonomia_promedio_dias': round(autonomia_promedio_dias, 2),
+
+            # ========== MÉTRICAS DE DEMANDA ==========
+            'demanda_total_tm': round(self.demanda_total_tm, 2),
+            'demanda_satisfecha_tm': round(self.demanda_satisfecha_tm, 2),
+            'demanda_insatisfecha_tm': round(self.demanda_total_tm - self.demanda_satisfecha_tm, 2),
+            'demanda_promedio_diaria_tm': round(demanda_promedio, 2),
+            'demanda_maxima_diaria_tm': round(demanda_maxima, 2),
+
+            # ========== MÉTRICAS DE DISRUPCIONES ==========
             'disrupciones_totales': self.ruta.disrupciones_totales,
-            'dias_bloqueados_total': self.ruta.dias_bloqueados_acumulados,
-            'pct_tiempo_bloqueado': (self.ruta.dias_bloqueados_acumulados / self.config.duracion_simulacion_dias * 100.0),
+            'dias_bloqueados_total': round(self.ruta.dias_bloqueados_acumulados, 2),
+            'pct_tiempo_bloqueado': round(
+                (self.ruta.dias_bloqueados_acumulados / self.config.duracion_simulacion_dias * 100.0), 2
+            ),
 
-            # Validación
-            'autonomia_promedio_dias': inventario_promedio / self.config.demanda_base_diaria_tm,
+            # ========== VALIDACIÓN ==========
+            'dias_simulados': dias_totales,
         }
 
 
@@ -367,11 +431,23 @@ def ejecutar_simulacion_simple(config: ConfiguracionSimulacion) -> Dict[str, Any
     """
     Ejecuta una simulación con la configuración dada.
 
+    Args:
+        config: Configuración de parámetros del sistema.
+
     Returns:
         Diccionario con KPIs de la simulación.
+
+    Raises:
+        AssertionError: Si la configuración tiene parámetros inválidos.
     """
+    # Validar configuración antes de simular
+    config.validar()
+
+    # Ejecutar simulación
     sim = SimulacionMinimal(config)
     sim.run()
+
+    # Retornar KPIs
     return sim.calcular_kpis()
 
 
