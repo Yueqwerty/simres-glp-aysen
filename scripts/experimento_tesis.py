@@ -51,14 +51,21 @@ def generar_configuraciones_factorial() -> List[Dict[str, Any]]:
 
     for cap_nombre, capacidad_tm in capacidades.items():
         for dur_nombre, duracion_max_dias in duraciones_max.items():
-            # Calcular punto de reorden (50% de capacidad)
-            punto_reorden = capacidad_tm * 0.5
+            # Política (Q,R) PROPORCIONAL para comparación justa:
+            # Ambos escenarios usan el MISMO criterio de gestión (% de capacidad)
+            # Esto asegura que las diferencias sean por capacidad física, no por política
 
-            # Calcular cantidad de pedido (50% de capacidad)
-            cantidad_pedido = capacidad_tm * 0.5
+            # Punto de reorden: 70% de capacidad
+            # (permite detectar nivel bajo con suficiente margen)
+            punto_reorden = capacidad_tm * 0.70
 
-            # Inventario inicial (60% de capacidad)
-            inventario_inicial = capacidad_tm * 0.6
+            # Cantidad pedido: 65% de capacidad
+            # (repone sustancialmente sin saturar)
+            cantidad_pedido = capacidad_tm * 0.65
+
+            # Inventario inicial: 85% de capacidad
+            # (sistema bien abastecido al inicio)
+            inventario_inicial = capacidad_tm * 0.85
 
             configuraciones.append({
                 'config_id': config_id,

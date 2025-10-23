@@ -45,23 +45,37 @@ Thumbs.db
 # Reglas específicas para el proyecto "simres-glp-aysen"
 # =================================================================
 
-# Ignorar todo el contenido de la carpeta de resultados
-results/*
-# Pero mantener la carpeta gracias a .gitkeep
+# Código obsoleto (legacy)
+_legacy/
+
+# Resultados de experimentos (regenerables)
+results/
 !results/.gitkeep
 
-# Ignorar archivos compilados de la extensión en C
-src/analisis_c/*.o
-src/analisis_c/*.dll
+# Archivos temporales
+*.tmp
+*.bak
+*.swp
+*~
 
-# Ignorar archivos temporales y basura identificados
-asdsa.txt
-sdasd.pdf
+# Logs
+*.log
 
-# Ignorar PDFs que son reportes o productos finales, no código
+# PDFs generados (excepto informe base)
 *.pdf
+!informe.pdf
 
-# Ignorar todas las imágenes PNG en la carpeta de diagramas (son generadas)
+# Imágenes generadas
 diagramas/*.png
+diagramas/*.jpg
 
-_legacy
+# Archivos de configuración específicos de usuario
+.env
+*.local
+
+# Notebooks de Jupyter (checkpoints)
+.ipynb_checkpoints/
+
+# Archivos de Poetry/pip
+poetry.lock
+*.egg-info
