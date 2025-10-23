@@ -63,3 +63,5 @@ sdasd.pdf
 
 # Ignorar todas las imágenes PNG en la carpeta de diagramas (son generadas)
 diagramas/*.png
+
+_legacy
