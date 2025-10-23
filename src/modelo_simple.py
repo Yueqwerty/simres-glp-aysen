@@ -40,17 +40,21 @@ class ConfiguracionSimulacion:
     """
     # Parámetros ENDÓGENOS (controlables por inversión/política)
     capacidad_hub_tm: float = 431.0  # Status quo Aysén (150+240+41 TM)
-    punto_reorden_tm: float = 216.0  # 50% de capacidad (política conservadora)
-    cantidad_pedido_tm: float = 216.0  # Tamaño fijo de pedido Q (política Q,R)
-    inventario_inicial_tm: float = 258.0  # 60% inicial (arranque realista)
+
+    # Política (Q,R) calibrada para demanda real:
+    # - Demanda durante lead time: 41.3 × 6 = 248 TM
+    # - Punto de reorden: debe cubrir LT demand + buffer de seguridad
+    # - Cantidad pedido: reponer sustancialmente para mantener autonomía
+    punto_reorden_tm: float = 300.0  # 70% capacidad (~7.3 días autonomía)
+    cantidad_pedido_tm: float = 280.0  # 65% capacidad (~6.8 días demanda)
+    inventario_inicial_tm: float = 380.0  # 88% inicial (sistema bien abastecido)
 
     # Parámetros de demanda
     # FUENTE: Informe CNE 2024 - Aysén
-    # Demanda anual 2023: 19.088 TM → 52.3 TM/día promedio
-    # Mes mayor consumo (julio 2023): 1.586 TM → 51.2 TM/día
-    # Calibrado para autonomía status quo: 431 TM / 52.5 TM/día ≈ 8.2 días
-    demanda_base_diaria_tm: float = 52.5  # Demanda promedio diaria (TM)
-    variabilidad_demanda: float = 0.15  # ±15% variabilidad estocástica
+    # Demanda GLP 2023: 15,061 TM/año → 41.3 TM/día promedio
+    # Validación autonomía: 431 TM / 41.3 TM/día = 10.4 días ✓
+    demanda_base_diaria_tm: float = 41.3  # Demanda promedio anual real
+    variabilidad_demanda: float = 0.10  # ±10% variabilidad estocástica
 
     # Parámetros de suministro
     # FUENTE: Datos operativos distribuidores
@@ -244,18 +248,11 @@ class SimulacionMinimal:
             # Calcular demanda del día
             demanda_base = self.config.demanda_base_diaria_tm
 
-            # Factor estacional (pico en invierno austral: junio-julio-agosto)
-            # FUENTE: Informe CNE - Mes de mayor consumo (julio): ~1.5x promedio anual
-            # Senoidal centrada en 1.0 para mantener promedio anual = demanda_base
-            dia_del_anio = dia % 365
-            # Invierno austral: día 172 (21 junio) a día 264 (21 septiembre)
-            # Pico en día ~200 (julio)
-            factor_estacional = 1.0 + 0.25 * np.sin(2 * np.pi * (dia_del_anio - 172) / 365.0)
-
             # Variabilidad aleatoria (ruido estocástico diario)
+            # Simplificado: SIN estacionalidad para facilitar análisis
             ruido = self.rng.normal(1.0, self.config.variabilidad_demanda)
 
-            demanda_dia = max(0.0, demanda_base * factor_estacional * ruido)
+            demanda_dia = max(0.0, demanda_base * ruido)
 
             # Intentar satisfacer demanda
             despachado = self.hub.despachar_a_clientes(demanda_dia)
@@ -281,31 +278,44 @@ class SimulacionMinimal:
             dia += 1
 
     def _proceso_reabastecimiento(self):
-        """Gestiona política de reabastecimiento (Q,R)."""
+        """
+        Gestiona política de reabastecimiento (Q,R).
+
+        Regla: Cuando inventario ≤ R, pedir Q (máximo 2 pedidos simultáneos).
+        """
+        MAX_PEDIDOS_SIMULTANEOS = 2
+
         while True:
             # Verificar si necesita pedir
             if self.hub.necesita_reabastecimiento():
-                # Verificar que la ruta esté operativa
-                if self.ruta.esta_operativa():
-                    # Crear pedido
-                    cantidad = self.config.cantidad_pedido_tm
+                # Permitir máximo 2 pedidos simultáneos para evitar colapso
+                if len(self.pedidos_en_transito) < MAX_PEDIDOS_SIMULTANEOS:
+                    # Verificar que la ruta esté operativa
+                    if self.ruta.esta_operativa():
+                        # Crear pedido
+                        cantidad = self.config.cantidad_pedido_tm
 
-                    # Calcular lead time (puede estar extendido por disrupción)
-                    lead_time = self.ruta.calcular_lead_time()
+                        # Calcular lead time (puede estar extendido por disrupción)
+                        lead_time = self.ruta.calcular_lead_time()
 
-                    logger.info(
-                        f"Día {self.env.now:.0f}: Pedido creado - "
-                        f"{cantidad:.0f} TM, ETA={lead_time:.1f} días"
-                    )
+                        logger.info(
+                            f"Día {self.env.now:.0f}: Pedido creado - "
+                            f"{cantidad:.0f} TM, ETA={lead_time:.1f} días "
+                            f"(pedidos en tránsito: {len(self.pedidos_en_transito)})"
+                        )
 
-                    # Programar llegada
-                    evento_llegada = self.env.process(
-                        self._llegada_suministro(cantidad, lead_time)
-                    )
-                    self.pedidos_en_transito.append(evento_llegada)
+                        # Programar llegada
+                        evento_llegada = self.env.process(
+                            self._llegada_suministro(cantidad, lead_time)
+                        )
+                        self.pedidos_en_transito.append(evento_llegada)
+                    else:
+                        logger.debug(
+                            f"Día {self.env.now:.0f}: No se puede pedir (ruta bloqueada)"
+                        )
                 else:
                     logger.debug(
-                        f"Día {self.env.now:.0f}: No se puede pedir (ruta bloqueada)"
+                        f"Día {self.env.now:.0f}: Inventario bajo pero hay {len(self.pedidos_en_transito)} pedido(s) en tránsito (límite alcanzado)"
                     )
 
             # Verificar cada día
@@ -395,33 +405,28 @@ class SimulacionMinimal:
         )
 
         return {
-            # ========== KPIs PRINCIPALES (para prueba de hipótesis) ==========
             'nivel_servicio_pct': round(nivel_servicio_pct, 2),
             'probabilidad_quiebre_stock_pct': round((dias_con_quiebre / dias_totales * 100.0), 2),
             'dias_con_quiebre': dias_con_quiebre,
 
-            # ========== MÉTRICAS DE INVENTARIO ==========
             'inventario_promedio_tm': round(inventario_promedio, 2),
             'inventario_minimo_tm': round(inventario_minimo, 2),
             'inventario_maximo_tm': round(inventario_maximo, 2),
             'inventario_std_tm': round(inventario_std, 2),
             'autonomia_promedio_dias': round(autonomia_promedio_dias, 2),
 
-            # ========== MÉTRICAS DE DEMANDA ==========
             'demanda_total_tm': round(self.demanda_total_tm, 2),
             'demanda_satisfecha_tm': round(self.demanda_satisfecha_tm, 2),
             'demanda_insatisfecha_tm': round(self.demanda_total_tm - self.demanda_satisfecha_tm, 2),
             'demanda_promedio_diaria_tm': round(demanda_promedio, 2),
             'demanda_maxima_diaria_tm': round(demanda_maxima, 2),
 
-            # ========== MÉTRICAS DE DISRUPCIONES ==========
             'disrupciones_totales': self.ruta.disrupciones_totales,
             'dias_bloqueados_total': round(self.ruta.dias_bloqueados_acumulados, 2),
             'pct_tiempo_bloqueado': round(
                 (self.ruta.dias_bloqueados_acumulados / self.config.duracion_simulacion_dias * 100.0), 2
             ),
 
-            # ========== VALIDACIÓN ==========
             'dias_simulados': dias_totales,
         }
 
