@@ -1,10 +1,13 @@
 """
-Script de Prueba Rapida
+Prueba de Configuraciones del Modelo de Simulacion.
 
-Ejecuta una simulacion de cada configuracion (6 simulaciones) para:
+Ejecuta una simulacion de cada configuracion del diseno factorial (6 simulaciones) para:
 1. Verificar que el modelo funciona correctamente
 2. Validar que los resultados tienen sentido
 3. Estimar tiempo de ejecucion del experimento completo
+
+Author:
+    Carlos Subiabre
 """
 import sys
 from pathlib import Path
@@ -73,7 +76,7 @@ def testConfiguracion(nombre: str, **kwargs) -> float:
 
 if __name__ == "__main__":
     print("\n" + "="*70)
-    print(" "*18 + "PRUEBA RAPIDA - MODELO SIMULACION")
+    print(" "*20 + "PRUEBA RAPIDA DEL MODELO")
     print("="*70)
     print("\nProbando las 6 configuraciones del diseno factorial...")
 
