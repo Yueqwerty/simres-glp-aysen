@@ -1,8 +1,8 @@
 """
-Entidades del Sistema de Suministro de GLP.
+Entidades del sistema de suministro de GLP.
 
-HubCoyhaique: Centro de almacenamiento y distribucion.
-RutaSuministro: Sistema de transporte con disrupciones.
+HubCoyhaique: Tanques de almacenamiento.
+RutaSuministro: Ruta de transporte con disrupciones.
 
 Author: Carlos Subiabre
 """
@@ -22,9 +22,9 @@ logger = logging.getLogger(__name__)
 
 class HubCoyhaique:
     """
-    Centro de almacenamiento de GLP (tanques Abastible + Lipigas + Gasco).
+    Tanques de GLP en Coyhaique (Abastible + Lipigas + Gasco).
 
-    Gestiona inventario con politica (Q,R) y registra quiebres de stock.
+    Maneja el inventario y registra cuando hay quiebres.
     """
 
     def __init__(self, env: simpy.Environment, config: ConfiguracionSimulacion):
@@ -42,12 +42,12 @@ class HubCoyhaique:
         self.quiebresStock = 0
 
     def recibirSuministro(self, cantidadTm: float) -> simpy.Event:
-        """Recibe suministro y agrega al inventario."""
+        """Recibe suministro y lo agrega al inventario."""
         self.totalRecibidoTm += cantidadTm
         return self.inventario.put(cantidadTm)
 
     def despacharAClientes(self, demandaTm: float) -> float:
-        """Despacha demanda. Retorna cantidad efectivamente despachada."""
+        """Despacha lo que se pueda. Retorna cuanto se despacho realmente."""
         disponible = self.inventario.level
 
         if disponible >= demandaTm:
@@ -62,15 +62,15 @@ class HubCoyhaique:
             return disponible
 
     def necesitaReabastecimiento(self) -> bool:
-        """Verifica si inventario <= punto de reorden."""
+        """Verifica si el inventario ya bajo del punto de reorden."""
         return self.inventario.level <= self.config.puntoReordenTm
 
 
 class RutaSuministro:
     """
-    Sistema de transporte con disrupciones aleatorias.
+    Ruta de transporte con disrupciones aleatorias.
 
-    Modela ruta Neuquen/Cabo Negro -> Coyhaique con bloqueos aleatorios.
+    Ruta Neuquen/Cabo Negro -> Coyhaique que se bloquea a veces.
     """
 
     def __init__(
@@ -90,14 +90,14 @@ class RutaSuministro:
         self.diasBloqueadosAcumulados = 0.0
 
     def estaOperativa(self) -> bool:
-        """Verifica si ruta esta operativa. Desbloquea automaticamente si corresponde."""
+        """Verifica si la ruta esta libre. Se desbloquea sola cuando termina el tiempo."""
         if self.bloqueada and self.env.now >= self.tiempoDesbloqueo:
             self.bloqueada = False
             logger.info(f"Dia {self.env.now:.0f}: Ruta desbloqueada")
         return not self.bloqueada
 
     def bloquearPorDisrupcion(self, duracionDias: float) -> None:
-        """Bloquea ruta por disrupcion durante duracionDias."""
+        """Bloquea la ruta por X dias."""
         self.bloqueada = True
         self.tiempoDesbloqueo = self.env.now + duracionDias
         self.disrupcionesTotales += 1
@@ -109,7 +109,7 @@ class RutaSuministro:
         )
 
     def calcularLeadTime(self) -> float:
-        """Calcula lead time efectivo: nominal + tiempo restante de disrupcion."""
+        """Calcula cuanto tarda en llegar un pedido (incluye tiempo de bloqueo)."""
         leadTimeBase = self.config.leadTimeNominalDias
 
         if self.bloqueada:

@@ -1,7 +1,7 @@
 """
-Motor de Simulacion del Sistema GLP Aysen.
+Simulador del sistema GLP Aysen.
 
-Coordina tres procesos en paralelo: demanda, reabastecimiento, disrupciones.
+Corre tres procesos en paralelo: demanda, reabastecimiento y disrupciones.
 
 Author: Carlos Subiabre
 """
@@ -25,10 +25,10 @@ class SimulacionGlpAysen:
     """
     Simulacion del sistema de suministro de GLP.
 
-    Tres procesos en paralelo:
-    1. Demanda diaria con estacionalidad invernal
-    2. Reabastecimiento politica (Q,R)
-    3. Disrupciones aleatorias
+    Corre tres cosas en paralelo:
+    1. Demanda diaria que sube en invierno
+    2. Pedidos cuando el inventario baja (politica Q,R)
+    3. Disrupciones que bloquean la ruta aleatoriamente
     """
 
     def __init__(self, config: ConfiguracionSimulacion):
@@ -48,9 +48,9 @@ class SimulacionGlpAysen:
 
     def calcularDemandaDia(self, dia: int) -> float:
         """
-        Calcula demanda diaria con estacionalidad y variacion aleatoria.
+        Calcula la demanda del dia. Sube en invierno, tiene variacion aleatoria.
 
-        D(t) = D_base × [1 + A × sin(2π(t - t_peak)/365)] × ε
+        Formula: D(t) = D_base × [1 + A × sin(2π(t - t_peak)/365)] × ruido
         """
         demandaBase = self.config.demandaBaseDiariaTm
 
@@ -66,7 +66,7 @@ class SimulacionGlpAysen:
         return demanda
 
     def run(self) -> None:
-        """Ejecuta simulacion completa."""
+        """Corre la simulacion."""
         self.env.process(self._procesoDemandaDiaria())
         self.env.process(self._procesoReabastecimiento())
         self.env.process(self._procesoDisrupciones())
@@ -83,7 +83,7 @@ class SimulacionGlpAysen:
         logger.info("Simulacion completada")
 
     def _procesoDemandaDiaria(self):
-        """Proceso SimPy: Demanda diaria y despachos a clientes."""
+        """Proceso que genera la demanda diaria y despacha a clientes."""
         dia = 0
 
         while True:
@@ -112,7 +112,7 @@ class SimulacionGlpAysen:
             dia += 1
 
     def _procesoReabastecimiento(self):
-        """Proceso SimPy: Politica de reabastecimiento (Q,R)."""
+        """Proceso que crea pedidos cuando el inventario baja del punto de reorden."""
         maxPedidosSimultaneos = 2
 
         while True:
@@ -146,7 +146,7 @@ class SimulacionGlpAysen:
             yield self.env.timeout(1.0)
 
     def _llegadaSuministro(self, cantidadTm: float, leadTimeDias: float):
-        """Proceso SimPy: Llegada de pedido de suministro."""
+        """Espera el lead time y luego recibe el pedido."""
         eventoActual = self.env.active_process
 
         yield self.env.timeout(leadTimeDias)
@@ -167,10 +167,9 @@ class SimulacionGlpAysen:
 
     def _procesoDisrupciones(self):
         """
-        Proceso SimPy: Generacion de disrupciones aleatorias.
+        Proceso que genera disrupciones que bloquean la ruta.
 
-        Frecuencia: Poisson con tasa λ eventos/ano.
-        Duracion: Triangular(min, mode, max).
+        La frecuencia es aleatoria (Poisson) y la duracion varia (Triangular).
         """
         if self.config.duracionDisrupcionMaxDias <= 0:
             return
@@ -195,7 +194,7 @@ class SimulacionGlpAysen:
             self.ruta.bloquearPorDisrupcion(duracion)
 
     def calcularKpis(self) -> Dict[str, Any]:
-        """Calcula indicadores de desempeno del sistema."""
+        """Calcula los indicadores de desempeno."""
         return calcularKpis(
             metricasDiarias=self.metricasDiarias,
             demandaTotalTm=self.demandaTotalTm,
@@ -212,12 +211,9 @@ class SimulacionGlpAysen:
 
 def ejecutarSimulacion(config: ConfiguracionSimulacion) -> Dict[str, Any]:
     """
-    Ejecuta simulacion completa con configuracion especificada.
+    Corre la simulacion con los parametros dados.
 
-    1. Valida configuracion
-    2. Crea instancia de simulacion
-    3. Ejecuta simulacion
-    4. Calcula y retorna KPIs
+    Valida, simula y retorna los resultados.
     """
     config.validar()
 

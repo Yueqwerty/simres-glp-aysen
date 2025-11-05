@@ -1,5 +1,5 @@
 """
-Metricas y KPIs del Sistema de Suministro de GLP.
+Metricas del sistema de suministro de GLP.
 
 Author: Carlos Subiabre
 """
@@ -12,7 +12,7 @@ import numpy as np
 
 @dataclass
 class MetricasDiarias:
-    """Registro de metricas operacionales de un dia."""
+    """Metricas de un dia de simulacion."""
 
     dia: int
     inventarioTm: float

@@ -1,7 +1,7 @@
 """
-Configuracion del Sistema de Suministro de GLP.
+Configuracion del sistema de suministro de GLP.
 
-Parametros calibrados con datos CNE 2024 para Region de Aysen.
+Parametros calibrados con datos del informe CNE 2024 para Aysen.
 
 Author: Carlos Subiabre
 """
@@ -17,12 +17,12 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ConfiguracionSimulacion:
     """
-    Parametros del modelo de simulacion.
+    Parametros de la simulacion.
 
-    Valores por defecto representan escenario "status quo" (capacidad 431 TM).
+    Por defecto usa el escenario "status quo" con capacidad de 431 TM.
 
-    Nota critica: ROP debe cumplir ROP >= demanda_durante_LT + stock_seguridad
-    ROP = 52.5 TM/dia × 6 dias + 1.5 dias SS = 394 TM
+    Importante: El punto de reorden debe cubrir la demanda durante el lead time
+    mas el stock de seguridad. ROP = 52.5 TM/dia × 6 dias + 1.5 dias SS = 394 TM
     """
 
     # Parametros de capacidad
@@ -52,7 +52,7 @@ class ConfiguracionSimulacion:
     usarEstacionalidad: bool = True
 
     def validar(self) -> None:
-        """Valida consistencia de parametros. Lanza AssertionError si hay errores."""
+        """Verifica que los parametros tengan sentido."""
         assert self.capacidadHubTm > 0, \
             "Capacidad debe ser positiva"
 
@@ -101,17 +101,17 @@ class ConfiguracionSimulacion:
             )
 
     def calcularAutonomiaTeoriacaDias(self) -> float:
-        """Calcula autonomia teorica: capacidad / demanda_diaria."""
+        """Cuantos dias dura el tanque lleno."""
         return self.capacidadHubTm / self.demandaBaseDiariaTm
 
     def calcularStockSeguridadDias(self) -> float:
-        """Calcula dias de stock de seguridad: (ROP - demanda_durante_LT) / demanda_diaria."""
+        """Dias de stock de seguridad del punto de reorden."""
         demandaDuranteLeadTime = self.demandaBaseDiariaTm * self.leadTimeNominalDias
         stockSeguridad = self.puntoReordenTm - demandaDuranteLeadTime
         return stockSeguridad / self.demandaBaseDiariaTm
 
     def __str__(self) -> str:
-        """Representacion legible de parametros clave."""
+        """Muestra los parametros principales."""
         autonomia = self.calcularAutonomiaTeoriacaDias()
         ss_dias = self.calcularStockSeguridadDias()
 
