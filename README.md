@@ -3,7 +3,7 @@
 **Tesis de Ingenieria Civil Industrial**
 
 **Autor:** Carlos Subiabre
-**Instituciones:** Universidad de Chile / Universidad Austral de Chile
+**Instituciones:** Universidad de Chile
 **Fecha:** Octubre 2024
 
 ---
