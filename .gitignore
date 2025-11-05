@@ -58,8 +58,11 @@ results/
 *.swp
 *~
 
-# Logs
+# Logs y archivos de texto temporales
 *.log
+validacion_output.txt
+docs/historial_sesion.txt
+docs/*.txt
 
 # PDFs generados (excepto informe base)
 *.pdf
