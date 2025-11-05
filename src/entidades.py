@@ -68,7 +68,7 @@ class HubCoyhaique:
 
 class RutaSuministro:
     """
-    Sistema de transporte con disrupciones estocasticas.
+    Sistema de transporte con disrupciones aleatorias.
 
     Modela ruta Neuquen/Cabo Negro -> Coyhaique con bloqueos aleatorios.
     """

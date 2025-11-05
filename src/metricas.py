@@ -38,7 +38,7 @@ def calcularKpis(
     duracionSimulacionDias: int
 ) -> Dict[str, Any]:
     """
-    Calcula indicadores clave de desempeno.
+    Calcula indicadores de desempeno del sistema.
 
     Returns:
         Dict con KPIs: nivel_servicio_pct, probabilidad_quiebre_stock_pct,

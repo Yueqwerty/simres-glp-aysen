@@ -1,7 +1,7 @@
 """
-Motor de Simulacion de Eventos Discretos para Sistema GLP Aysen.
+Motor de Simulacion del Sistema GLP Aysen.
 
-Orquesta procesos concurrentes: demanda, reabastecimiento, disrupciones.
+Coordina tres procesos en paralelo: demanda, reabastecimiento, disrupciones.
 
 Author: Carlos Subiabre
 """
@@ -23,12 +23,12 @@ logger = logging.getLogger(__name__)
 
 class SimulacionGlpAysen:
     """
-    Simulacion de eventos discretos del sistema de suministro de GLP.
+    Simulacion del sistema de suministro de GLP.
 
-    Tres procesos concurrentes:
+    Tres procesos en paralelo:
     1. Demanda diaria con estacionalidad invernal
     2. Reabastecimiento politica (Q,R)
-    3. Disrupciones aleatorias (Poisson/Triangular)
+    3. Disrupciones aleatorias
     """
 
     def __init__(self, config: ConfiguracionSimulacion):
@@ -48,7 +48,7 @@ class SimulacionGlpAysen:
 
     def calcularDemandaDia(self, dia: int) -> float:
         """
-        Calcula demanda diaria con estacionalidad y ruido estocastico.
+        Calcula demanda diaria con estacionalidad y variacion aleatoria.
 
         D(t) = D_base × [1 + A × sin(2π(t - t_peak)/365)] × ε
         """
@@ -167,7 +167,7 @@ class SimulacionGlpAysen:
 
     def _procesoDisrupciones(self):
         """
-        Proceso SimPy: Generacion de disrupciones estocasticas.
+        Proceso SimPy: Generacion de disrupciones aleatorias.
 
         Frecuencia: Poisson con tasa λ eventos/ano.
         Duracion: Triangular(min, mode, max).
@@ -195,7 +195,7 @@ class SimulacionGlpAysen:
             self.ruta.bloquearPorDisrupcion(duracion)
 
     def calcularKpis(self) -> Dict[str, Any]:
-        """Calcula indicadores clave de desempeno del sistema."""
+        """Calcula indicadores de desempeno del sistema."""
         return calcularKpis(
             metricasDiarias=self.metricasDiarias,
             demandaTotalTm=self.demandaTotalTm,
