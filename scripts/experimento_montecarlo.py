@@ -24,7 +24,7 @@ from modelo import ConfiguracionSimulacion, ejecutarSimulacion
 logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
-NUM_REPLICAS = 1000
+NUM_REPLICAS = 10000
 SEMILLA_BASE = 42
 
 def generarConfiguracionesFactorial() -> List[Dict[str, Any]]:
@@ -410,9 +410,9 @@ def exportarResultados(df: pd.DataFrame,
     # Resultados ANOVA en JSON
     metadata = {
         'fechaExperimento': datetime.now().isoformat(),
-        'numConfiguraciones': df['config_id'].nunique(),
-        'numReplicas': df['replica'].max(),
-        'totalSimulaciones': len(df),
+        'numConfiguraciones': int(df['config_id'].nunique()),
+        'numReplicas': int(df['replica'].max()),
+        'totalSimulaciones': int(len(df)),
         'nivelServicioGlobal': {
             'media': float(df['nivel_servicio_pct'].mean()),
             'std': float(df['nivel_servicio_pct'].std()),
