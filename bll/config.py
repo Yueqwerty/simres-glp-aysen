@@ -32,17 +32,33 @@ class SimulationConfig:
         self._validate()
 
     def _validate(self):
-        assert self.capacity_tm > 0
-        assert self.reorder_point_tm < self.capacity_tm
-        assert self.order_quantity_tm > 0
-        assert self.initial_inventory_tm <= self.capacity_tm
-        assert self.base_daily_demand_tm > 0
-        assert 0 <= self.demand_variability < 1
-        assert 0 <= self.seasonal_amplitude < 1
-        assert self.nominal_lead_time_days > 0
-        assert self.annual_disruption_rate >= 0
-        assert self.disruption_min_days <= self.disruption_mode_days <= self.disruption_max_days
-        assert self.simulation_days > 0
+        errors = []
+
+        if self.capacity_tm <= 0:
+            errors.append("capacity_tm debe ser > 0")
+        if self.reorder_point_tm >= self.capacity_tm:
+            errors.append("reorder_point_tm debe ser < capacity_tm")
+        if self.order_quantity_tm <= 0:
+            errors.append("order_quantity_tm debe ser > 0")
+        if self.initial_inventory_tm > self.capacity_tm:
+            errors.append("initial_inventory_tm debe ser <= capacity_tm")
+        if self.base_daily_demand_tm <= 0:
+            errors.append("base_daily_demand_tm debe ser > 0")
+        if not (0 <= self.demand_variability < 1):
+            errors.append("demand_variability debe estar en [0, 1)")
+        if not (0 <= self.seasonal_amplitude < 1):
+            errors.append("seasonal_amplitude debe estar en [0, 1)")
+        if self.nominal_lead_time_days <= 0:
+            errors.append("nominal_lead_time_days debe ser > 0")
+        if self.annual_disruption_rate < 0:
+            errors.append("annual_disruption_rate debe ser >= 0")
+        if not (self.disruption_min_days <= self.disruption_mode_days <= self.disruption_max_days):
+            errors.append("disruption_days debe cumplir: min <= mode <= max")
+        if self.simulation_days <= 0:
+            errors.append("simulation_days debe ser > 0")
+
+        if errors:
+            raise ValueError(f"Configuración inválida: {'; '.join(errors)}")
 
     def theoretical_autonomy_days(self) -> float:
         return self.capacity_tm / self.base_daily_demand_tm

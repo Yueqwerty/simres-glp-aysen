@@ -16,11 +16,15 @@ class ExperimentResult:
     kpis: dict
 
 
-def _run_replica(args: tuple[str, SimulationConfig, int]) -> ExperimentResult:
+def _run_replica(args: tuple[str, SimulationConfig, int]) -> ExperimentResult | None:
+    """Ejecuta una réplica. Retorna None si falla (fail-safe)."""
     config_name, config, replica = args
-    kpis = run_simulation(config)
-    del kpis["time_series"]
-    return ExperimentResult(config_name, replica, kpis)
+    try:
+        kpis = run_simulation(config)
+        del kpis["time_series"]
+        return ExperimentResult(config_name, replica, kpis)
+    except Exception:
+        return None
 
 
 def run_experiment(
@@ -47,16 +51,20 @@ def run_experiment(
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = {executor.submit(_run_replica, task): task for task in tasks}
         for future in as_completed(futures):
+            completed += 1
+            if on_progress:
+                on_progress(completed, total)
+
             result = future.result()
+            if result is None:
+                continue
+
             row = {
                 "config_name": result.config_name,
                 "replica": result.replica,
                 **result.kpis
             }
             results.append(row)
-            completed += 1
-            if on_progress:
-                on_progress(completed, total)
 
     return pd.DataFrame(results)
 
@@ -76,14 +84,18 @@ def run_experiment_sequential(
 
     for config_id, (name, base_config) in enumerate(configs, start=1):
         for replica in range(1, num_replicas + 1):
-            seed = base_seed + (config_id - 1) * 1_000_000 + replica
-            config = replace(base_config, seed=seed)
-            kpis = run_simulation(config)
-            del kpis["time_series"]
-            row = {"config_name": name, "replica": replica, **kpis}
-            results.append(row)
             completed += 1
             if on_progress:
                 on_progress(completed, total)
+
+            seed = base_seed + (config_id - 1) * 1_000_000 + replica
+            config = replace(base_config, seed=seed)
+            try:
+                kpis = run_simulation(config)
+                del kpis["time_series"]
+                row = {"config_name": name, "replica": replica, **kpis}
+                results.append(row)
+            except Exception:
+                continue
 
     return pd.DataFrame(results)

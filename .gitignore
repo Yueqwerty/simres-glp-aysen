@@ -85,6 +85,17 @@ diagramas/*.jpg
 # Notebooks de Jupyter (checkpoints)
 .ipynb_checkpoints/
 
-# Archivos de Poetry/pip
-poetry.lock
+# Archivos de Poetry/pip (poetry.lock DEBE estar versionado)
 *.egg-info
+
+# Bases de datos SQLite
+*.db
+*.sqlite
+*.sqlite3
+
+# Node modules (frontend)
+node_modules/
+
+# Archivos de Windows problemáticos
+nul
+NUL
