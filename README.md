@@ -30,7 +30,7 @@ simres-glp-aysen/
 │   ├── modelo.py                  # Modelo DES principal
 │   └── monitores.py               # Herramientas de monitoreo
 ├── scripts/
-│   ├── experimento_montecarlo.py  # Diseno factorial 2x3 con 1000 replicas
+│   ├── experimento_montecarlo.py  # Diseno factorial 2x3 con 10,000 replicas
 │   ├── generar_figuras_tesis.py   # Generacion de figuras profesionales
 │   └── test_modelo.py             # Pruebas del modelo
 ├── results/
@@ -52,7 +52,7 @@ simres-glp-aysen/
 | **Capacidad de Almacenamiento** | Endogeno | Status Quo: 431 TM<br>Propuesta: 681 TM (+58%) |
 | **Duracion Maxima de Disrupciones** | Exogeno | Corta: 7 dias<br>Media: 14 dias<br>Larga: 21 dias |
 
-**Total:** 6 configuraciones x 1,000 replicas = 6,000 simulaciones Monte Carlo
+**Total:** 6 configuraciones x 10,000 replicas = 60,000 simulaciones Monte Carlo
 
 ### Parametros del Sistema
 
@@ -108,8 +108,8 @@ pip install numpy pandas simpy matplotlib seaborn scipy statsmodels tqdm
 ### Ejecutar Experimento
 
 ```bash
-# Ejecutar experimento Monte Carlo (6,000 simulaciones)
-# Puede tomar 30-60 minutos segun hardware
+# Ejecutar experimento Monte Carlo (60,000 simulaciones)
+# Puede tomar 5-8 horas segun hardware
 python scripts/experimento_montecarlo.py
 
 # Generar figuras para la tesis
@@ -120,7 +120,7 @@ python scripts/generar_figuras_tesis.py
 
 Los resultados se guardan en:
 
-- `results/montecarlo/resultados_montecarlo.csv` - Datos completos (6,000 filas)
+- `results/montecarlo/resultados_montecarlo.csv` - Datos completos (60,000 filas)
 - `results/montecarlo/resumen_estadisticas.csv` - Estadisticas por configuracion
 - `results/montecarlo/intervalos_confianza.csv` - Intervalos de confianza al 95%
 - `results/montecarlo/metadata_experimento.json` - Metadatos y resultados ANOVA
@@ -189,7 +189,7 @@ El experimento calcula automaticamente:
 ### Generacion de Numeros Aleatorios
 
 - **Generador:** Mersenne Twister (MT19937) de NumPy
-- **Semillas:** Unicas por configuracion y replica: s = 42 + (config-1)*10000 + replica
+- **Semillas:** Unicas por configuracion y replica: s = 42 + (config-1)*100000 + replica
 - **Garantiza:** Reproducibilidad exacta y independencia estadistica
 
 ---
