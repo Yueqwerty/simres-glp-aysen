@@ -25,6 +25,7 @@ import {
   ScatterChart,
   Scatter,
   ReferenceLine,
+  ComposedChart,
 } from "recharts"
 
 interface SeriesTemporal {
@@ -117,10 +118,21 @@ export default function Results() {
   const { data: seriesData, isLoading: seriesLoading } = useQuery({
     queryKey: ["series-temporales", simulacionId],
     queryFn: async () => {
-      const response = await api.get<{ series_temporales: SeriesTemporal[] }>(
+      const response = await api.get<{ series_temporales: any[] }>(
         `/simulaciones/${simulacionId}/series-temporales`
       )
-      return response.data.series_temporales
+      // Transformar nombres de campos de inglés a español
+      return response.data.series_temporales.map((item: any) => ({
+        dia: item.day ?? item.dia,
+        inventario: item.inventory ?? item.inventario,
+        demanda: item.demand ?? item.demanda,
+        demanda_satisfecha: item.satisfied_demand ?? item.demanda_satisfecha,
+        suministro_recibido: item.supply_received ?? item.suministro_recibido,
+        quiebre_stock: item.stockout ?? item.quiebre_stock,
+        ruta_bloqueada: item.route_blocked ?? item.ruta_bloqueada,
+        pedidos_pendientes: item.pending_orders ?? item.pedidos_pendientes,
+        dias_autonomia: item.autonomy_days ?? item.dias_autonomia,
+      })) as SeriesTemporal[]
     },
     enabled: !!simulacionId && simulacion?.estado === "completed",
   })
@@ -337,7 +349,7 @@ export default function Results() {
                     <Line
                       type="monotone"
                       dataKey="inventario"
-                      stroke="#6366f1"
+                      stroke="#7C5BAD"
                       strokeWidth={2}
                       dot={false}
                       name="Inventario (TM)"
@@ -345,8 +357,9 @@ export default function Results() {
                     <Line
                       type="monotone"
                       dataKey="demanda"
-                      stroke="#737373"
+                      stroke="#C4B0DC"
                       strokeWidth={2}
+                      strokeDasharray="5 5"
                       dot={false}
                       name="Demanda (TM)"
                     />
@@ -382,18 +395,18 @@ export default function Results() {
                       type="monotone"
                       dataKey="demanda_satisfecha"
                       stackId="1"
-                      stroke="#22c55e"
-                      fill="#22c55e"
-                      fillOpacity={0.6}
+                      stroke="#7C5BAD"
+                      fill="#7C5BAD"
+                      fillOpacity={0.7}
                       name="Demanda Satisfecha (TM)"
                     />
                     <Area
                       type="monotone"
                       dataKey={(d: SeriesTemporal) => d.demanda - d.demanda_satisfecha}
                       stackId="1"
-                      stroke="#ef4444"
-                      fill="#ef4444"
-                      fillOpacity={0.6}
+                      stroke="#4A3666"
+                      fill="#4A3666"
+                      fillOpacity={0.9}
                       name="Demanda Insatisfecha (TM)"
                     />
                   </AreaChart>
@@ -416,16 +429,17 @@ export default function Results() {
                     <Area
                       type="monotone"
                       dataKey="dias_autonomia"
-                      stroke="#f59e0b"
-                      fill="#f59e0b"
-                      fillOpacity={0.3}
+                      stroke="#7C5BAD"
+                      fill="#D4C4E8"
+                      fillOpacity={0.6}
                       name="Días de Autonomía"
                     />
                     <ReferenceLine
                       y={resultados.autonomia_minima_dias}
-                      stroke="#ef4444"
-                      strokeDasharray="3 3"
-                      label="Mínimo"
+                      stroke="#4A3666"
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      label={{ value: "Mínimo", fill: "#4A3666", fontSize: 12 }}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -449,7 +463,7 @@ export default function Results() {
                     <Legend />
                     <Bar
                       dataKey="suministro_recibido"
-                      fill="#6366f1"
+                      fill="#7C5BAD"
                       name="Suministro Recibido (TM)"
                     />
                   </BarChart>
@@ -481,7 +495,7 @@ export default function Results() {
                     <Line
                       type="stepAfter"
                       dataKey="pedidos_pendientes"
-                      stroke="#8b5cf6"
+                      stroke="#7C5BAD"
                       strokeWidth={2}
                       dot={false}
                       name="Pedidos Pendientes"
@@ -495,56 +509,126 @@ export default function Results() {
 
               {/* TAB: DISRUPCIONES */}
               <TabsContent value="disrupciones" className="space-y-6">
-              {/* 5. Quiebres de Stock y Bloqueos de Ruta */}
-              <div className="grid grid-cols-2 gap-4">
-                <Card className="relative border-slate-200 shadow-sm">
-                  <button onClick={() => exportarGrafico(grafico5Ref, 'grafico5_quiebres_stock')} className="absolute top-4 right-4 p-2 hover:bg-neutral-100 rounded-lg transition-colors z-10" title="Descargar"><Download className="h-3 w-3 text-neutral-600" /></button>
-                  <div ref={grafico5Ref}>
-                    <h3 className="text-base font-semibold text-neutral-900 mb-4">Quiebres de Stock</h3>
-                    <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={seriesData.filter((d) => d.quiebre_stock).length > 0 ? seriesData.filter((d) => d.quiebre_stock) : []}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
-                      <XAxis dataKey="dia" stroke="#737373" fontSize={12} />
-                      <YAxis stroke="#737373" fontSize={12} />
-                      <Tooltip />
-                      <Bar dataKey={(d) => 1} fill="#ef4444" name="Quiebre" />
-                    </BarChart>
+              {/* Gráfico combinado: Inventario con zonas de disrupción */}
+              <Card className="relative border-slate-200 shadow-sm">
+                <button onClick={() => exportarGrafico(grafico5Ref, 'grafico5_disrupciones_inventario')} className="absolute top-4 right-4 p-2 hover:bg-neutral-100 rounded-lg transition-colors z-10" title="Descargar"><Download className="h-4 w-4 text-neutral-600" /></button>
+                <div ref={grafico5Ref} className="p-6">
+                  <h3 className="text-base font-semibold text-neutral-900 mb-2">Impacto de Disrupciones en el Inventario</h3>
+                  <p className="text-sm text-neutral-500 mb-4">Zonas sombreadas indican períodos de disrupción</p>
+                  <ResponsiveContainer width="100%" height={320}>
+                    <ComposedChart data={seriesData.map(d => ({
+                      ...d,
+                      quiebreZona: d.quiebre_stock ? resultados.inventario_maximo_tm : 0,
+                      bloqueadoZona: d.ruta_bloqueada ? resultados.inventario_maximo_tm : 0,
+                    }))}>
+                      <defs>
+                        <linearGradient id="gradientQuiebre" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#4A3666" stopOpacity={0.4}/>
+                          <stop offset="100%" stopColor="#4A3666" stopOpacity={0.1}/>
+                        </linearGradient>
+                        <linearGradient id="gradientBloqueo" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#7C5BAD" stopOpacity={0.3}/>
+                          <stop offset="100%" stopColor="#7C5BAD" stopOpacity={0.05}/>
+                        </linearGradient>
+                        <linearGradient id="gradientInventario" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#7C5BAD" stopOpacity={0.8}/>
+                          <stop offset="100%" stopColor="#7C5BAD" stopOpacity={0.2}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" vertical={false} />
+                      <XAxis dataKey="dia" stroke="#737373" fontSize={11} tickLine={false} />
+                      <YAxis stroke="#737373" fontSize={11} tickLine={false} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e5e5', borderRadius: '8px' }}
+                        formatter={(value: number, name: string) => {
+                          if (name === 'quiebreZona' || name === 'bloqueadoZona') return null;
+                          return [value.toFixed(1) + ' TM', 'Inventario'];
+                        }}
+                        labelFormatter={(label) => `Día ${label}`}
+                      />
+                      <Area type="monotone" dataKey="bloqueadoZona" fill="url(#gradientBloqueo)" stroke="none" name="bloqueadoZona" />
+                      <Area type="monotone" dataKey="quiebreZona" fill="url(#gradientQuiebre)" stroke="none" name="quiebreZona" />
+                      <Area type="monotone" dataKey="inventario" fill="url(#gradientInventario)" stroke="#7C5BAD" strokeWidth={2} name="Inventario" />
+                      <ReferenceLine y={resultados.inventario_promedio_tm} stroke="#4A3666" strokeDasharray="5 5" strokeWidth={1.5} />
+                    </ComposedChart>
                   </ResponsiveContainer>
-                  <div className="mt-4 text-center">
-                    <p className="text-2xl font-bold text-neutral-900">
-                      {resultados.dias_con_quiebre}
-                    </p>
-                    <p className="text-sm text-neutral-500">
-                      {resultados.probabilidad_quiebre_stock_pct.toFixed(1)}% del tiempo
-                    </p>
+                  <div className="flex items-center justify-center gap-8 mt-4 pt-4 border-t border-neutral-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-3 rounded" style={{background: 'linear-gradient(to right, #7C5BAD, #C4B0DC)'}}></div>
+                      <span className="text-xs text-neutral-600">Inventario</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-3 rounded bg-[#4A3666] opacity-40"></div>
+                      <span className="text-xs text-neutral-600">Quiebre de Stock</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-3 rounded bg-[#7C5BAD] opacity-30"></div>
+                      <span className="text-xs text-neutral-600">Ruta Bloqueada</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-0.5 border-t-2 border-dashed border-[#4A3666]"></div>
+                      <span className="text-xs text-neutral-600">Inv. Promedio</span>
+                    </div>
                   </div>
-                  </div>
-                </Card>
+                </div>
+              </Card>
 
-                <Card className="relative border-slate-200 shadow-sm">
-                  <button onClick={() => exportarGrafico(grafico6Ref, 'grafico6_ruta_bloqueada')} className="absolute top-4 right-4 p-2 hover:bg-neutral-100 rounded-lg transition-colors z-10" title="Descargar"><Download className="h-3 w-3 text-neutral-600" /></button>
-                  <div ref={grafico6Ref}>
-                    <h3 className="text-base font-semibold text-neutral-900 mb-4">Ruta Bloqueada</h3>
-                    <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={seriesData.filter((d) => d.ruta_bloqueada).length > 0 ? seriesData.filter((d) => d.ruta_bloqueada) : []}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
-                      <XAxis dataKey="dia" stroke="#737373" fontSize={12} />
-                      <YAxis stroke="#737373" fontSize={12} />
-                      <Tooltip />
-                      <Bar dataKey={(d) => 1} fill="#f59e0b" name="Bloqueado" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                  <div className="mt-4 text-center">
-                    <p className="text-2xl font-bold text-neutral-900">
-                      {resultados.dias_bloqueados_total}
-                    </p>
-                    <p className="text-sm text-neutral-500">
-                      {resultados.pct_tiempo_bloqueado.toFixed(1)}% del tiempo
-                    </p>
+              {/* Gráfico de barras: Análisis de eventos */}
+              <Card className="relative border-slate-200 shadow-sm">
+                <button onClick={() => exportarGrafico(grafico6Ref, 'grafico6_analisis_disrupciones')} className="absolute top-4 right-4 p-2 hover:bg-neutral-100 rounded-lg transition-colors z-10" title="Descargar"><Download className="h-4 w-4 text-neutral-600" /></button>
+                <div ref={grafico6Ref} className="p-6">
+                  <h3 className="text-base font-semibold text-neutral-900 mb-4">Resumen de Disrupciones</h3>
+                  <div className="grid grid-cols-2 gap-6">
+                    {/* Lado izquierdo: Gráfico de dona simulado */}
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="relative w-40 h-40">
+                        <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                          <circle cx="50" cy="50" r="40" fill="none" stroke="#E8E8E8" strokeWidth="12" />
+                          <circle
+                            cx="50" cy="50" r="40" fill="none"
+                            stroke="#7C5BAD" strokeWidth="12"
+                            strokeDasharray={`${(100 - resultados.probabilidad_quiebre_stock_pct) * 2.51} 251`}
+                          />
+                          <circle
+                            cx="50" cy="50" r="40" fill="none"
+                            stroke="#4A3666" strokeWidth="12"
+                            strokeDasharray={`${resultados.probabilidad_quiebre_stock_pct * 2.51} 251`}
+                            strokeDashoffset={`${-(100 - resultados.probabilidad_quiebre_stock_pct) * 2.51}`}
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="text-2xl font-bold text-neutral-900">{resultados.nivel_servicio_pct.toFixed(1)}%</span>
+                          <span className="text-xs text-neutral-500">Nivel Servicio</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-4 mt-4">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-3 h-3 rounded-full bg-[#7C5BAD]"></div>
+                          <span className="text-xs text-neutral-600">Operativo</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-3 h-3 rounded-full bg-[#4A3666]"></div>
+                          <span className="text-xs text-neutral-600">Quiebre</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Lado derecho: Métricas */}
+                    <div className="space-y-4">
+                      <div className="p-4 bg-gradient-to-r from-[#4A3666]/10 to-transparent rounded-lg border-l-4 border-[#4A3666]">
+                        <p className="text-xs text-neutral-500 uppercase tracking-wide">Días con Quiebre</p>
+                        <p className="text-3xl font-bold text-[#4A3666]">{resultados.dias_con_quiebre}</p>
+                        <p className="text-sm text-neutral-500">{resultados.probabilidad_quiebre_stock_pct.toFixed(1)}% del período</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-r from-[#7C5BAD]/10 to-transparent rounded-lg border-l-4 border-[#7C5BAD]">
+                        <p className="text-xs text-neutral-500 uppercase tracking-wide">Ruta Bloqueada</p>
+                        <p className="text-3xl font-bold text-[#7C5BAD]">{resultados.dias_bloqueados_total}</p>
+                        <p className="text-sm text-neutral-500">{resultados.disrupciones_totales} eventos de disrupción</p>
+                      </div>
+                    </div>
                   </div>
-                  </div>
-                </Card>
-              </div>
+                </div>
+              </Card>
               </TabsContent>
 
               {/* TAB: ANÁLISIS */}
@@ -562,21 +646,21 @@ export default function Results() {
                     <Tooltip cursor={{ strokeDasharray: "3 3" }} />
                     <Scatter
                       data={seriesData}
-                      fill="#6366f1"
-                      fillOpacity={0.6}
+                      fill="#7C5BAD"
+                      fillOpacity={0.7}
                       name="Inventario"
                     />
                     <ReferenceLine
                       y={resultados.inventario_promedio_tm}
-                      stroke="#22c55e"
-                      strokeDasharray="3 3"
-                      label="Promedio"
+                      stroke="#7C5BAD"
+                      strokeDasharray="5 5"
+                      label={{ value: "Promedio", fill: "#7C5BAD", fontSize: 12 }}
                     />
                     <ReferenceLine
                       y={resultados.inventario_minimo_tm}
-                      stroke="#ef4444"
-                      strokeDasharray="3 3"
-                      label="Mínimo"
+                      stroke="#4A3666"
+                      strokeDasharray="5 5"
+                      label={{ value: "Mínimo", fill: "#4A3666", fontSize: 12 }}
                     />
                   </ScatterChart>
                 </ResponsiveContainer>

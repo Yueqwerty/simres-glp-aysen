@@ -1,261 +1,198 @@
-/**
- * Página de comparación de escenarios.
- */
-
-import { useState } from "react"
+import { useRef } from "react"
+import { useParams, useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
-import { GitCompare, TrendingUp, TrendingDown, Minus } from "lucide-react"
+import { GitCompare, ArrowLeft, Download } from "lucide-react"
+import { toPng } from "html-to-image"
 import { api } from "@/lib/api"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import type { Simulacion } from "@/types"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  LineChart, Line, AreaChart, Area, BarChart, Bar,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from "recharts"
+
+const COLORS = ["#7C5BAD", "#2563eb", "#059669", "#d97706", "#dc2626"]
 
 export default function Compare() {
-  const [selectedSims, setSelectedSims] = useState<number[]>([])
+  const { ids } = useParams<{ ids: string }>()
+  const navigate = useNavigate()
+  const invRef = useRef<HTMLDivElement>(null)
+  const autRef = useRef<HTMLDivElement>(null)
+  const kpiRef = useRef<HTMLDivElement>(null)
+  const simIds = ids?.split(",").map(Number) || []
 
-  const { data: simulaciones } = useQuery({
-    queryKey: ["simulaciones-all"],
+  const { data: sims, isLoading } = useQuery({
+    queryKey: ["compare", simIds],
     queryFn: async () => {
-      const response = await api.get<Simulacion[]>("/simulaciones/")
-      return response.data.filter((s) => s.estado === "completed")
+      const results = await Promise.all(simIds.map(async (id) => {
+        const [sim, series] = await Promise.all([
+          api.get(`/simulaciones/${id}`),
+          api.get(`/simulaciones/${id}/series-temporales`)
+        ])
+        return { id, sim: sim.data, series: series.data.series_temporales }
+      }))
+      return results
     },
+    enabled: simIds.length > 0
   })
 
-  const toggleSimulation = (id: number) => {
-    if (selectedSims.includes(id)) {
-      setSelectedSims(selectedSims.filter((s) => s !== id))
-    } else if (selectedSims.length < 4) {
-      setSelectedSims([...selectedSims, id])
+  const getSimLabel = (sim: any, idx: number) => {
+    const configName = sim.sim.configuracion_nombre || `Config ${sim.id}`
+    return `${configName}`
+  }
+
+  const exportar = async (ref: React.RefObject<HTMLDivElement>, name: string) => {
+    if (ref.current) {
+      const url = await toPng(ref.current, { quality: 1, pixelRatio: 3, backgroundColor: "#fff" })
+      const a = document.createElement("a"); a.download = `${name}.png`; a.href = url; a.click()
     }
   }
 
-  const selectedSimulations = simulaciones?.filter((s) => selectedSims.includes(s.id)) || []
+  if (isLoading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin h-10 w-10 border-4 border-[#7C5BAD] border-t-transparent rounded-full"></div>
+    </div>
+  )
 
-  const getComparisonIcon = (val1: number, val2: number, higher_is_better: boolean) => {
-    if (Math.abs(val1 - val2) < 0.1) return <Minus className="h-4 w-4 text-slate-400" />
-    const isHigher = val1 > val2
-    if ((isHigher && higher_is_better) || (!isHigher && !higher_is_better)) {
-      return <TrendingUp className="h-4 w-4 text-slate-700" />
-    }
-    return <TrendingDown className="h-4 w-4 text-slate-500" />
-  }
+  if (!sims?.length) return <div className="p-8">No se encontraron simulaciones</div>
+
+  const invData = sims[0].series.map((s: any, i: number) => {
+    const p: any = { dia: s.day }
+    sims.forEach((sim, idx) => { p[getSimLabel(sim, idx)] = sim.series[i]?.inventory || 0 })
+    return p
+  })
+
+  const autData = sims[0].series.map((s: any, i: number) => {
+    const p: any = { dia: s.day }
+    sims.forEach((sim, idx) => { p[getSimLabel(sim, idx)] = sim.series[i]?.autonomy_days || 0 })
+    return p
+  })
+
+  const kpiData = sims.map((s, i) => ({
+    name: getSimLabel(s, i),
+    ns: s.sim.nivel_servicio_pct,
+    quiebre: s.sim.dias_con_quiebre,
+    aut: s.sim.autonomia_promedio_dias
+  }))
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <div className="container mx-auto p-8 max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-3 bg-slate-100 rounded-xl">
-              <GitCompare className="h-6 w-6 text-slate-700" />
-            </div>
-            <div>
-              <h1 className="text-4xl font-bold text-slate-900">Comparar Escenarios</h1>
-              <p className="text-slate-600 mt-1">Análisis comparativo de simulaciones para toma de decisiones</p>
-            </div>
+      <div className="container mx-auto p-8 max-w-5xl">
+        <Button variant="ghost" onClick={() => navigate("/historial")} className="mb-4">
+          <ArrowLeft className="h-4 w-4 mr-2" />Volver
+        </Button>
+        <div className="flex items-center gap-3 mb-8">
+          <div className="p-3 bg-[#7C5BAD]/10 rounded-xl">
+            <GitCompare className="h-6 w-6 text-[#7C5BAD]" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">Comparación</h1>
+            <p className="text-slate-500 text-sm">Simulaciones: {simIds.map(id => `#${id}`).join(", ")}</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Selector de Simulaciones */}
-          <Card className="lg:col-span-1 border-slate-200 shadow-sm">
-            <CardHeader className="bg-slate-50">
-              <CardTitle>Seleccionar Simulaciones</CardTitle>
-              <CardDescription>
-                Seleccione hasta 4 simulaciones para comparar ({selectedSims.length}/4)
-              </CardDescription>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between bg-slate-50">
+              <CardTitle className="text-base">Inventario</CardTitle>
+              <button onClick={() => exportar(invRef, "comp_inventario")} className="p-2 hover:bg-slate-200 rounded"><Download className="h-4 w-4" /></button>
             </CardHeader>
-            <CardContent className="pt-6">
-              <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                {simulaciones?.map((sim) => (
-                  <div
-                    key={sim.id}
-                    onClick={() => toggleSimulation(sim.id)}
-                    className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                      selectedSims.includes(sim.id)
-                        ? "border-slate-700 bg-slate-100"
-                        : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
-                    }`}
-                  >
-                    <p className="font-medium text-sm">Simulación #{sim.id}</p>
-                    <p className="text-xs text-slate-500">
-                      {new Date(sim.ejecutada_en).toLocaleDateString()}
-                    </p>
-                    <p className="text-xs text-slate-600 mt-1">
-                      NS: {sim.nivel_servicio_pct?.toFixed(1)}%
-                    </p>
-                  </div>
-                ))}
+            <CardContent className="pt-4">
+              <div ref={invRef} className="bg-white p-4 max-w-3xl mx-auto">
+                <ResponsiveContainer width="100%" height={260}>
+                  <LineChart data={invData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
+                    <XAxis dataKey="dia" fontSize={10} label={{ value: "Día", position: "bottom", fontSize: 10 }} />
+                    <YAxis fontSize={10} label={{ value: "TM", angle: -90, position: "insideLeft", fontSize: 10 }} />
+                    <Tooltip formatter={(v: number) => `${v.toFixed(1)} TM`} />
+                    <Legend />
+                    {sims.map((s, i) => <Line key={s.id} type="monotone" dataKey={getSimLabel(s, i)} stroke={COLORS[i]} strokeWidth={2} dot={false} />)}
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
 
-          {/* Tabla Comparativa */}
-          <Card className="lg:col-span-3 border-slate-200 shadow-sm">
-            <CardHeader className="bg-slate-50">
-              <CardTitle>Comparación de KPIs</CardTitle>
-              <CardDescription>Análisis lado a lado de métricas clave de rendimiento</CardDescription>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between bg-slate-50">
+              <CardTitle className="text-base">Autonomía</CardTitle>
+              <button onClick={() => exportar(autRef, "comp_autonomia")} className="p-2 hover:bg-slate-200 rounded"><Download className="h-4 w-4" /></button>
             </CardHeader>
-            <CardContent className="pt-6">
-              {selectedSimulations.length === 0 ? (
-                <div className="text-center py-20">
-                  <GitCompare className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-                  <p className="text-slate-500 text-lg">Seleccione al menos una simulación para comparar</p>
-                  <p className="text-sm text-slate-400 mt-2">
-                    Use el panel izquierdo para elegir las simulaciones
-                  </p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-slate-200">
-                        <th className="text-left py-3 px-4 font-semibold text-slate-700">Métrica</th>
-                        {selectedSimulations.map((sim, idx) => (
-                          <th key={sim.id} className="text-center py-3 px-4 font-semibold text-slate-700">
-                            <div className="flex flex-col items-center">
-                              <span>Sim #{sim.id}</span>
-                              {idx > 0 && <span className="text-xs text-slate-500 font-normal">vs Base</span>}
-                            </div>
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {[
-                        {
-                          name: "Nivel de Servicio (%)",
-                          key: "nivel_servicio_pct",
-                          higher_better: true,
-                          decimals: 1,
-                        },
-                        {
-                          name: "Prob. Quiebre de Stock (%)",
-                          key: "probabilidad_quiebre_stock_pct",
-                          higher_better: false,
-                          decimals: 1,
-                        },
-                        { name: "Días con Quiebre", key: "dias_con_quiebre", higher_better: false, decimals: 0 },
-                        {
-                          name: "Inventario Promedio (TM)",
-                          key: "inventario_promedio_tm",
-                          higher_better: false,
-                          decimals: 1,
-                        },
-                        {
-                          name: "Inventario Mínimo (TM)",
-                          key: "inventario_minimo_tm",
-                          higher_better: true,
-                          decimals: 1,
-                        },
-                        {
-                          name: "Autonomía Promedio (días)",
-                          key: "autonomia_promedio_dias",
-                          higher_better: true,
-                          decimals: 1,
-                        },
-                        {
-                          name: "Demanda Insatisfecha (TM)",
-                          key: "demanda_insatisfecha_tm",
-                          higher_better: false,
-                          decimals: 1,
-                        },
-                        {
-                          name: "Disrupciones Totales",
-                          key: "disrupciones_totales",
-                          higher_better: false,
-                          decimals: 0,
-                        },
-                      ].map((metric) => (
-                        <tr key={metric.key} className="hover:bg-slate-50">
-                          <td className="py-3 px-4 font-medium text-slate-700">{metric.name}</td>
-                          {selectedSimulations.map((sim, idx) => {
-                            const value = (sim as any)[metric.key] as number
-                            const baseValue = (selectedSimulations[0] as any)[metric.key] as number
-                            return (
-                              <td key={sim.id} className="text-center py-3 px-4">
-                                <div className="flex items-center justify-center gap-2">
-                                  <span className="font-semibold">
-                                    {value?.toFixed(metric.decimals) || "N/A"}
-                                  </span>
-                                  {idx > 0 && getComparisonIcon(value, baseValue, metric.higher_better)}
-                                </div>
-                                {idx > 0 && baseValue && baseValue !== 0 && (
-                                  <span className="text-xs text-slate-500">
-                                    {((value - baseValue) / baseValue * 100).toFixed(1)}%
-                                  </span>
-                                )}
-                                {idx > 0 && baseValue === 0 && value !== 0 && (
-                                  <span className="text-xs text-slate-500">∞</span>
-                                )}
-                              </td>
-                            )
-                          })}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+            <CardContent className="pt-4">
+              <div ref={autRef} className="bg-white p-4 max-w-3xl mx-auto">
+                <ResponsiveContainer width="100%" height={260}>
+                  <AreaChart data={autData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
+                    <XAxis dataKey="dia" fontSize={10} label={{ value: "Día", position: "bottom", fontSize: 10 }} />
+                    <YAxis fontSize={10} label={{ value: "Días", angle: -90, position: "insideLeft", fontSize: 10 }} />
+                    <Tooltip formatter={(v: number) => `${v.toFixed(1)} días`} />
+                    <Legend />
+                    {sims.map((s, i) => <Area key={s.id} type="monotone" dataKey={getSimLabel(s, i)} stroke={COLORS[i]} fill={COLORS[i]} fillOpacity={0.15} strokeWidth={2} />)}
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between bg-slate-50">
+              <CardTitle className="text-base">KPIs</CardTitle>
+              <button onClick={() => exportar(kpiRef, "comp_kpis")} className="p-2 hover:bg-slate-200 rounded"><Download className="h-4 w-4" /></button>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div ref={kpiRef} className="bg-white p-4 max-w-3xl mx-auto">
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={kpiData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
+                    <XAxis dataKey="name" fontSize={10} />
+                    <YAxis fontSize={10} />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="ns" fill="#7C5BAD" name="Nivel Servicio (%)" />
+                    <Bar dataKey="quiebre" fill="#4A3666" name="Días Quiebre" />
+                    <Bar dataKey="aut" fill="#C4B0DC" name="Autonomía (d)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="bg-slate-50"><CardTitle className="text-base">Tabla</CardTitle></CardHeader>
+            <CardContent className="pt-4">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b-2 bg-slate-50">
+                    <th className="text-left py-3 px-3">Simulación</th>
+                    <th className="text-right py-3 px-3">NS (%)</th>
+                    <th className="text-right py-3 px-3">Quiebres</th>
+                    <th className="text-right py-3 px-3">Inv Prom</th>
+                    <th className="text-right py-3 px-3">Autonomía</th>
+                    <th className="text-right py-3 px-3">Disrupciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sims.map((s, i) => (
+                    <tr key={s.id} className="border-b hover:bg-slate-50">
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-block w-3 h-3 rounded-full" style={{backgroundColor: COLORS[i]}}></span>
+                          <span className="font-medium">{getSimLabel(s, i)}</span>
+                          <span className="text-slate-400 text-xs">#{s.id}</span>
+                        </div>
+                      </td>
+                      <td className="text-right py-3 px-3 font-semibold">{s.sim.nivel_servicio_pct?.toFixed(2)}%</td>
+                      <td className="text-right py-3 px-3">{s.sim.dias_con_quiebre}</td>
+                      <td className="text-right py-3 px-3">{s.sim.inventario_promedio_tm?.toFixed(1)} TM</td>
+                      <td className="text-right py-3 px-3">{s.sim.autonomia_promedio_dias?.toFixed(2)} d</td>
+                      <td className="text-right py-3 px-3">{s.sim.disrupciones_totales}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </CardContent>
           </Card>
         </div>
-
-        {selectedSimulations.length >= 2 && (
-          <Card className="mt-6 border-slate-200 shadow-sm">
-            <CardHeader className="bg-slate-50">
-              <CardTitle>Resumen de Diferencias Clave</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white p-4 rounded-lg border border-slate-200">
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-2">Mejor Nivel de Servicio</p>
-                  <p className="text-3xl font-semibold text-slate-900">
-                    Sim #
-                    {
-                      selectedSimulations.reduce((prev, curr) =>
-                        (curr.nivel_servicio_pct || 0) > (prev.nivel_servicio_pct || 0) ? curr : prev
-                      ).id
-                    }
-                  </p>
-                  <p className="text-sm text-slate-500 mt-1">
-                    {Math.max(...selectedSimulations.map((s) => s.nivel_servicio_pct || 0)).toFixed(1)}%
-                  </p>
-                </div>
-
-                <div className="bg-white p-4 rounded-lg border border-slate-200">
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-2">Menor Quiebre de Stock</p>
-                  <p className="text-3xl font-semibold text-slate-900">
-                    Sim #
-                    {
-                      selectedSimulations.reduce((prev, curr) =>
-                        (curr.dias_con_quiebre || Infinity) < (prev.dias_con_quiebre || Infinity) ? curr : prev
-                      ).id
-                    }
-                  </p>
-                  <p className="text-sm text-slate-500 mt-1">
-                    {Math.min(...selectedSimulations.map((s) => s.dias_con_quiebre || 0))} días
-                  </p>
-                </div>
-
-                <div className="bg-white p-4 rounded-lg border border-slate-200">
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-2">Mayor Autonomía</p>
-                  <p className="text-3xl font-semibold text-slate-900">
-                    Sim #
-                    {
-                      selectedSimulations.reduce((prev, curr) =>
-                        (curr.autonomia_promedio_dias || 0) > (prev.autonomia_promedio_dias || 0) ? curr : prev
-                      ).id
-                    }
-                  </p>
-                  <p className="text-sm text-slate-500 mt-1">
-                    {Math.max(...selectedSimulations.map((s) => s.autonomia_promedio_dias || 0)).toFixed(1)} días
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   )

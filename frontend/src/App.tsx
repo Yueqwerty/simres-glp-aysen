@@ -32,7 +32,7 @@ function App() {
               <Route path="/configurar" element={<Configuration />} />
               <Route path="/resultados/:simulacionId" element={<Results />} />
               <Route path="/monte-carlo" element={<MonteCarlo />} />
-              <Route path="/comparar" element={<Compare />} />
+              <Route path="/comparar/:ids" element={<Compare />} />
               <Route path="/historial" element={<History />} />
               <Route path="/analisis" element={<Analysis />} />
               <Route path="/validacion" element={<Validation />} />

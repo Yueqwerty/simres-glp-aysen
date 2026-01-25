@@ -61,6 +61,8 @@ class GLPSimulation:
             inv = self.hub.inventory.level
             autonomy = inv / demand if demand > 0 else 0.0
 
+            is_blocked = self.route._blocked and self.env.now < self.route._unblock_time
+
             self.daily_metrics.append(DailyMetrics(
                 day=day,
                 inventory_tm=inv,
@@ -68,7 +70,7 @@ class GLPSimulation:
                 satisfied_demand_tm=dispatched,
                 supply_received_tm=0.0,
                 stockout=(dispatched < demand),
-                route_blocked=not self.route.is_operational(),
+                route_blocked=is_blocked,
                 pending_orders=len(self.orders_in_transit),
                 autonomy_days=autonomy
             ))

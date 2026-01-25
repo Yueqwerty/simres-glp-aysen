@@ -2,9 +2,10 @@
  * Página de historial de simulaciones.
  */
 
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
-import { Activity, Calendar, CheckCircle, XCircle, Clock, TrendingUp } from "lucide-react"
+import { Activity, Calendar, CheckCircle, XCircle, Clock, TrendingUp, GitCompare } from "lucide-react"
 import { api } from "@/lib/api"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,6 +13,7 @@ import type { Simulacion } from "@/types"
 
 export default function History() {
   const navigate = useNavigate()
+  const [selectedIds, setSelectedIds] = useState<number[]>([])
 
   const { data: simulaciones, isLoading } = useQuery({
     queryKey: ["simulaciones-all"],
@@ -52,6 +54,20 @@ export default function History() {
   const completadas = simulaciones?.filter((s) => s.estado === "completed") || []
   const fallidas = simulaciones?.filter((s) => s.estado === "failed") || []
   const ejecutando = simulaciones?.filter((s) => s.estado === "running") || []
+
+  const toggleSelect = (id: number) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter((i) => i !== id))
+    } else if (selectedIds.length < 5) {
+      setSelectedIds([...selectedIds, id])
+    }
+  }
+
+  const handleCompare = () => {
+    if (selectedIds.length >= 2) {
+      navigate(`/comparar/${selectedIds.join(",")}`)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -120,12 +136,25 @@ export default function History() {
           </Card>
         </div>
 
+        {/* Botón Comparar */}
+        {selectedIds.length >= 2 && (
+          <div className="mb-4 p-4 bg-[#7C5BAD]/10 rounded-lg border border-[#7C5BAD]/30 flex items-center justify-between">
+            <span className="text-sm text-[#4A3666] font-medium">
+              {selectedIds.length} simulaciones seleccionadas
+            </span>
+            <Button onClick={handleCompare} className="bg-[#7C5BAD] hover:bg-[#4A3666]">
+              <GitCompare className="h-4 w-4 mr-2" />
+              Comparar Seleccionadas
+            </Button>
+          </div>
+        )}
+
         {/* Lista de Simulaciones */}
         <Card className="border-slate-200 shadow-sm">
           <CardHeader className="bg-slate-50">
             <CardTitle>Todas las Simulaciones</CardTitle>
             <CardDescription>
-              Haga clic en una simulación para ver los resultados detallados
+              Seleccione hasta 5 simulaciones para comparar, o haga clic en "Ver Detalles"
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
@@ -139,12 +168,19 @@ export default function History() {
                 {simulaciones.map((sim) => (
                   <Card
                     key={sim.id}
-                    className={`${getStatusColor(sim.estado)} hover:shadow-md transition-all cursor-pointer`}
-                    onClick={() => sim.estado === "completed" && navigate(`/resultados/${sim.id}`)}
+                    className={`${getStatusColor(sim.estado)} ${selectedIds.includes(sim.id) ? 'ring-2 ring-[#7C5BAD]' : ''} hover:shadow-md transition-all`}
                   >
                     <CardContent className="pt-6">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
+                          {sim.estado === "completed" && (
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.includes(sim.id)}
+                              onChange={() => toggleSelect(sim.id)}
+                              className="w-5 h-5 rounded border-slate-300 text-[#7C5BAD] focus:ring-[#7C5BAD] cursor-pointer"
+                            />
+                          )}
                           {getStatusIcon(sim.estado)}
                           <div>
                             <h4 className="font-semibold text-slate-900">Simulación #{sim.id}</h4>
@@ -174,7 +210,7 @@ export default function History() {
                                   {sim.dias_con_quiebre || 0}
                                 </p>
                               </div>
-                              <Button variant="outline" size="sm">
+                              <Button variant="outline" size="sm" onClick={() => navigate(`/resultados/${sim.id}`)}>
                                 <TrendingUp className="h-4 w-4 mr-2" />
                                 Ver Detalles
                               </Button>

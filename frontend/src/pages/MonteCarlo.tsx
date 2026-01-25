@@ -186,7 +186,11 @@ export default function MonteCarlo() {
                 <p className="text-sm text-slate-600 mb-4">
                   Tiempo estimado:{" "}
                   <span className="font-semibold">
-                    ~{Math.ceil((numReplicas / maxWorkers / 60) * 2)} min
+                    {(() => {
+                      const segundos = (numReplicas * 0.02) / maxWorkers
+                      if (segundos < 60) return `~${Math.ceil(segundos)} seg`
+                      return `~${Math.ceil(segundos / 60)} min`
+                    })()}
                   </span>
                 </p>
                 <Button
@@ -232,12 +236,20 @@ export default function MonteCarlo() {
                 <div className="space-y-4">
                   {runningExperiments.map((exp) => {
                     const replicasCompletadas = Math.floor((exp.progreso / 100) * exp.num_replicas)
-                    const tiempoTranscurrido = exp.iniciado_en
-                      ? Math.floor((new Date().getTime() - new Date(exp.iniciado_en).getTime()) / 1000)
-                      : 0
-                    const tiempoEstimado = exp.progreso > 5
-                      ? Math.floor((tiempoTranscurrido / exp.progreso) * (100 - exp.progreso))
-                      : null
+
+                    let tiempoTranscurrido = 0
+                    if (exp.iniciado_en) {
+                      const iniciado = new Date(exp.iniciado_en + 'Z').getTime()
+                      tiempoTranscurrido = Math.max(0, Math.floor((Date.now() - iniciado) / 1000))
+                    }
+
+                    let tiempoEstimado: number | null = null
+                    if (exp.progreso > 5 && tiempoTranscurrido > 0) {
+                      const estimado = Math.floor((tiempoTranscurrido / exp.progreso) * (100 - exp.progreso))
+                      if (estimado > 0 && estimado < 86400) {
+                        tiempoEstimado = estimado
+                      }
+                    }
 
                     return (
                       <Card key={exp.id} className="border-slate-300 bg-slate-50">

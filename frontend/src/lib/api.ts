@@ -13,6 +13,7 @@ export const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 120000, // 2 minutos para operaciones grandes como cargar 100k réplicas
 })
 
 // Interceptors para manejo de errores global

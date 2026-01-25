@@ -523,3 +523,148 @@ def get_experiment_replicas(
         "num_replicas": len(datos),
         "replicas": datos
     }
+
+
+@router.get(
+    "/experiments/{experiment_id}/series-temporales",
+    summary="Obtener series temporales agregadas del experimento",
+    description="""
+    Genera series temporales agregadas para un experimento Monte Carlo.
+
+    Ejecuta un subconjunto de réplicas (por defecto 50) con las mismas configuraciones
+    y calcula estadísticas por día:
+    - Media, desviación estándar
+    - Percentiles 5, 25, 50, 75, 95
+
+    Ideal para visualizar bandas de confianza en gráficos de series temporales
+    en la tesis.
+    """,
+)
+def get_experiment_series_temporales(
+    *,
+    db: Session = Depends(get_db),
+    experiment_id: int,
+    num_muestras: int = 50,
+):
+    """Genera series temporales agregadas para visualización.
+
+    Args:
+        db: Sesión de base de datos
+        experiment_id: ID del experimento
+        num_muestras: Número de réplicas a ejecutar para generar series (default: 50)
+
+    Returns:
+        Series temporales agregadas con estadísticas por día
+    """
+    import numpy as np
+    from bll.config import SimulationConfig
+    from bll.simulation import run_simulation
+
+    experiment = db.query(MonteCarloExperiment).filter(
+        MonteCarloExperiment.id == experiment_id
+    ).first()
+
+    if not experiment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Experimento {experiment_id} no encontrado",
+        )
+
+    # Obtener configuración
+    config = db.query(Configuracion).filter(
+        Configuracion.id == experiment.configuracion_id
+    ).first()
+
+    if not config:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Configuración no encontrada",
+        )
+
+    params = config.parametros
+    cap = params.get("capacidad_hub_tm", 431.0)
+    inv_pct = params.get("inventario_inicial_pct", 60.0)
+    seed_base = params.get("semilla_aleatoria") or 42
+    sim_days = params.get("duracion_simulacion_dias", 365)
+
+    # Ejecutar múltiples réplicas y recolectar series temporales
+    all_series = []
+
+    for i in range(num_muestras):
+        sim_config = SimulationConfig(
+            capacity_tm=cap,
+            reorder_point_tm=params.get("punto_reorden_tm", cap * 0.7),
+            order_quantity_tm=params.get("cantidad_pedido_tm", cap * 0.5),
+            initial_inventory_tm=cap * inv_pct / 100.0,
+            base_daily_demand_tm=params.get("demanda_base_diaria_tm", 52.5),
+            nominal_lead_time_days=params.get("lead_time_nominal_dias", 6.0),
+            disruption_min_days=params.get("duracion_disrupcion_min_dias", 3.0),
+            disruption_mode_days=params.get("duracion_disrupcion_mode_dias", 7.0),
+            disruption_max_days=params.get("duracion_disrupcion_max_dias", 21.0),
+            annual_disruption_rate=params.get("tasa_disrupciones_anual", 4.0),
+            use_seasonality=params.get("usar_estacionalidad", True),
+            simulation_days=sim_days,
+            seed=seed_base * 100000 + i + 1000000,  # Semillas diferentes
+        )
+
+        result = run_simulation(sim_config)
+        all_series.append(result["time_series"])
+
+    # Agregar por día
+    series_agregadas = []
+
+    for day in range(sim_days):
+        day_data = {
+            "inventario": [],
+            "demanda": [],
+            "demanda_satisfecha": [],
+            "dias_autonomia": [],
+            "quiebre_stock": [],
+            "ruta_bloqueada": [],
+        }
+
+        for series in all_series:
+            if day < len(series):
+                row = series[day]
+                day_data["inventario"].append(row["inventory"])
+                day_data["demanda"].append(row["demand"])
+                day_data["demanda_satisfecha"].append(row["satisfied_demand"])
+                day_data["dias_autonomia"].append(row["autonomy_days"])
+                day_data["quiebre_stock"].append(1 if row["stockout"] else 0)
+                day_data["ruta_bloqueada"].append(1 if row["route_blocked"] else 0)
+
+        # Calcular estadísticas
+        inv = np.array(day_data["inventario"])
+        dem = np.array(day_data["demanda"])
+        dem_sat = np.array(day_data["demanda_satisfecha"])
+        aut = np.array(day_data["dias_autonomia"])
+
+        series_agregadas.append({
+            "dia": day,
+            # Inventario
+            "inventario_mean": float(np.mean(inv)),
+            "inventario_std": float(np.std(inv)),
+            "inventario_p5": float(np.percentile(inv, 5)),
+            "inventario_p25": float(np.percentile(inv, 25)),
+            "inventario_p50": float(np.percentile(inv, 50)),
+            "inventario_p75": float(np.percentile(inv, 75)),
+            "inventario_p95": float(np.percentile(inv, 95)),
+            # Demanda
+            "demanda_mean": float(np.mean(dem)),
+            "demanda_satisfecha_mean": float(np.mean(dem_sat)),
+            # Autonomía
+            "dias_autonomia_mean": float(np.mean(aut)),
+            "dias_autonomia_p5": float(np.percentile(aut, 5)),
+            "dias_autonomia_p95": float(np.percentile(aut, 95)),
+            # Probabilidades
+            "prob_quiebre_stock": float(np.mean(day_data["quiebre_stock"])) * 100,
+            "prob_ruta_bloqueada": float(np.mean(day_data["ruta_bloqueada"])) * 100,
+        })
+
+    return {
+        "experiment_id": experiment_id,
+        "experiment_nombre": experiment.nombre,
+        "num_muestras": num_muestras,
+        "dias_simulados": sim_days,
+        "series_temporales": series_agregadas,
+    }
