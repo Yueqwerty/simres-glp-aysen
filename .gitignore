@@ -1,8 +1,3 @@
-# =================================================================
-# Reglas estándar para proyectos de Python
-# =================================================================
-
-# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -10,45 +5,31 @@ __pycache__/
 # C extensions
 *.so
 
-# Distribution / packaging
 build/
 dist/
 *.egg-info/
 .eggs/
 
-# Virtual environments
 .venv/
 venv/
 env/
 
-# Test & Coverage reports
 .pytest_cache/
 .coverage
 htmlcov/
 
-# =================================================================
-# Reglas para IDEs y editores de código
-# =================================================================
+
 .vscode/
 .idea/
 .spyderproject/
 .ropeproject/
 .claude/
-
-# =================================================================
-# Reglas para archivos de Sistema Operativo
-# =================================================================
 .DS_Store
 Thumbs.db
 
-# =================================================================
-# Reglas específicas para el proyecto "simres-glp-aysen"
-# =================================================================
 
-# Código obsoleto (legacy)
 _legacy/
 
-# Resultados de experimentos (regenerables)
 results/
 !results/.gitkeep
 
@@ -58,44 +39,28 @@ results/
 *.swp
 *~
 
-# Logs y archivos de texto temporales
 *.log
 validacion_output.txt
-docs/historial_sesion.txt
-docs/*.txt
-docs/ANALISIS_TECNICO_MODELO.md
-docs/DIAGRAMAS_FLUJO.md
-docs/GUIA_DEFENSA_COMPLETA.md
-docs/presentacion.md
-docs/diagramas.html
-docs/diagramas_flujo.drawio
 
-# PDFs generados (excepto informe base)
+
 *.pdf
 !informe.pdf
 
-# Imágenes generadas
 diagramas/*.png
 diagramas/*.jpg
 
-# Archivos de configuración específicos de usuario
 .env
 *.local
 
-# Notebooks de Jupyter (checkpoints)
 .ipynb_checkpoints/
 
-# Archivos de Poetry/pip (poetry.lock DEBE estar versionado)
 *.egg-info
 
-# Bases de datos SQLite
 *.db
 *.sqlite
 *.sqlite3
 
-# Node modules (frontend)
 node_modules/
 
-# Archivos de Windows problemáticos
 nul
 NUL
