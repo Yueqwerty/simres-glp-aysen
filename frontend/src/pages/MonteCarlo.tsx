@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useQuery, useMutation } from "@tanstack/react-query"
-import { Play, Loader2, TrendingUp, BarChart3, AlertCircle, X, ChevronDown } from "lucide-react"
+import { Play, Loader2, TrendingUp, BarChart3, AlertCircle, X } from "lucide-react"
 import { api } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -101,7 +101,6 @@ export default function MonteCarlo() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="container mx-auto p-8 max-w-7xl">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-3 bg-slate-100 rounded-xl">
@@ -117,7 +116,6 @@ export default function MonteCarlo() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Configuración del Experimento */}
           <Card className="lg:col-span-1 border-slate-200 shadow-sm">
             <CardHeader className="bg-slate-50">
               <CardTitle>Nuevo Experimento</CardTitle>
@@ -215,7 +213,6 @@ export default function MonteCarlo() {
             </CardContent>
           </Card>
 
-          {/* Experimentos en Ejecución */}
           <Card className="lg:col-span-2 border-slate-200 shadow-sm">
             <CardHeader className="bg-slate-50">
               <CardTitle>Experimentos en Ejecución</CardTitle>
@@ -317,7 +314,6 @@ export default function MonteCarlo() {
           </Card>
         </div>
 
-        {/* Experimentos Completados */}
         <Card className="mt-6 border-slate-200 shadow-sm">
           <CardHeader className="bg-slate-50">
             <CardTitle>Experimentos Completados</CardTitle>

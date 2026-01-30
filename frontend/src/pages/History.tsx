@@ -72,7 +72,6 @@ export default function History() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="container mx-auto p-8 max-w-7xl">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-3 bg-slate-100 rounded-xl">
@@ -85,7 +84,6 @@ export default function History() {
           </div>
         </div>
 
-        {/* Estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card className="border-slate-200 shadow-sm">
             <CardContent className="pt-6">
@@ -136,7 +134,6 @@ export default function History() {
           </Card>
         </div>
 
-        {/* Botón Comparar */}
         {selectedIds.length >= 2 && (
           <div className="mb-4 p-4 bg-[#7C5BAD]/10 rounded-lg border border-[#7C5BAD]/30 flex items-center justify-between">
             <span className="text-sm text-[#4A3666] font-medium">
@@ -149,7 +146,6 @@ export default function History() {
           </div>
         )}
 
-        {/* Lista de Simulaciones */}
         <Card className="border-slate-200 shadow-sm">
           <CardHeader className="bg-slate-50">
             <CardTitle>Todas las Simulaciones</CardTitle>

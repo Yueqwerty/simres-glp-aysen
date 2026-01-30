@@ -1,6 +1,6 @@
 """Servicio para Simulaciones."""
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.core.simulation_runner import run_simulation_async
 from app.models.configuracion import Configuracion
@@ -64,7 +64,12 @@ async def execute_simulation(db: Session, configuracion_id: int) -> Simulacion:
 
 def get_simulacion(db: Session, simulacion_id: int) -> Simulacion | None:
     """Obtener simulación por ID."""
-    return db.query(Simulacion).filter(Simulacion.id == simulacion_id).first()
+    return (
+        db.query(Simulacion)
+        .options(joinedload(Simulacion.configuracion))
+        .filter(Simulacion.id == simulacion_id)
+        .first()
+    )
 
 
 def get_simulaciones(
@@ -74,7 +79,7 @@ def get_simulaciones(
     limit: int = 100,
 ) -> list[Simulacion]:
     """Obtener lista de simulaciones."""
-    query = db.query(Simulacion)
+    query = db.query(Simulacion).options(joinedload(Simulacion.configuracion))
 
     if configuracion_id:
         query = query.filter(Simulacion.configuracion_id == configuracion_id)

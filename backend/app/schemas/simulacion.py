@@ -16,6 +16,7 @@ class SimulacionResponse(BaseModel):
 
     id: int
     configuracion_id: int
+    configuracion_nombre: str | None = None
     estado: str
     ejecutada_en: datetime
     duracion_segundos: float | None

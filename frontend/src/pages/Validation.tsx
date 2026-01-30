@@ -201,7 +201,6 @@ export default function Validation() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="container mx-auto p-8 max-w-7xl">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-3 bg-slate-100 rounded-xl">
@@ -216,10 +215,9 @@ export default function Validation() {
           </div>
         </div>
 
-        {/* Resumen General */}
         <Alert variant="success" className="mb-6">
           <CheckCircle className="h-5 w-5" />
-          <AlertTitle className="text-lg">✓ Sistema Validado Exitosamente</AlertTitle>
+          <AlertTitle className="text-lg">Sistema Validado Exitosamente</AlertTitle>
           <AlertDescription>
             <div className="mt-2 flex items-center gap-6">
               <div className="text-2xl font-bold text-green-900">
@@ -259,7 +257,6 @@ export default function Validation() {
             </TabsTrigger>
           </TabsList>
 
-          {/* TAB: RESUMEN */}
           <TabsContent value="resumen" className="space-y-6">
             <Card className="border-slate-200 shadow-sm">
               <CardHeader className="bg-slate-50">
@@ -341,8 +338,7 @@ export default function Validation() {
             </div>
           </TabsContent>
 
-          {/* TAB: VALIDACIÓN FÍSICA */}
-          <TabsContent value="fisica" className="space-y-6">
+                    <TabsContent value="fisica" className="space-y-6">
             <Alert variant="danger">
               <Shield className="h-5 w-5" />
               <AlertTitle>Pruebas Críticas - Máxima Prioridad</AlertTitle>
@@ -379,7 +375,7 @@ export default function Validation() {
                     </div>
                     <div className="p-4 bg-green-50 rounded-lg border-2 border-green-200">
                       <p className="text-sm text-green-700 mb-1">Estado</p>
-                      <p className="text-xl font-bold text-green-900">✓ {prueba.estado}</p>
+                      <p className="text-xl font-bold text-green-900">{prueba.estado}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -387,8 +383,7 @@ export default function Validation() {
             ))}
           </TabsContent>
 
-          {/* TAB: CASOS EXTREMOS */}
-          <TabsContent value="extremos" className="space-y-6">
+                    <TabsContent value="extremos" className="space-y-6">
             <Alert variant="warning">
               <AlertTriangle className="h-5 w-5" />
               <AlertTitle>Validación en Condiciones Límite</AlertTitle>
@@ -429,8 +424,7 @@ export default function Validation() {
             </div>
           </TabsContent>
 
-          {/* TAB: VALIDACIÓN ESTADÍSTICA */}
-          <TabsContent value="estadistica" className="space-y-6">
+                    <TabsContent value="estadistica" className="space-y-6">
             <Alert variant="info">
               <Beaker className="h-5 w-5" />
               <AlertTitle>Tests de Bondad de Ajuste</AlertTitle>
@@ -473,7 +467,7 @@ export default function Validation() {
                       <p className="text-sm text-green-700 mb-2">Criterio de aceptación</p>
                       <p className="text-3xl font-bold text-green-900">{prueba.valorEsperado}</p>
                       <p className="text-sm text-green-700 mt-2">
-                        ✓ No se rechaza H₀ (α=0.05)
+                        No se rechaza H0 (a=0.05)
                       </p>
                     </div>
                   </div>
@@ -482,8 +476,7 @@ export default function Validation() {
             ))}
           </TabsContent>
 
-          {/* TAB: TABLA COMPLETA */}
-          <TabsContent value="completo" className="space-y-6">
+                    <TabsContent value="completo" className="space-y-6">
             <Card className="border-slate-200 shadow-sm">
               <CardHeader className="bg-slate-50">
                 <div className="flex items-center justify-between">
@@ -536,7 +529,7 @@ export default function Validation() {
                                   }>
                                     {prueba.criticidad}
                                   </Badge>
-                                  <Badge variant="success">✓ {prueba.estado}</Badge>
+                                  <Badge variant="success">{prueba.estado}</Badge>
                                 </div>
                               </div>
                             </div>

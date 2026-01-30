@@ -16,7 +16,6 @@ export function Sidebar() {
 
   return (
     <aside className="w-60 h-screen bg-white border-r border-neutral-200 fixed left-0 top-0 flex flex-col">
-      {/* Logo */}
       <div className="h-16 flex items-center px-6 border-b border-neutral-200">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center">
@@ -31,7 +30,6 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 px-3 py-6">
         <ul className="space-y-1">
           {NAV_ITEMS.map((item) => {
@@ -59,7 +57,6 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      {/* Footer */}
       <div className="px-6 py-4 border-t border-neutral-200">
         <p className="text-[10px] text-neutral-400 font-medium">v1.0.0</p>
       </div>

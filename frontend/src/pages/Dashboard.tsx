@@ -37,7 +37,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
       <header className="h-16 bg-white border-b flex items-center">
         <div className="w-full max-w-7xl mx-auto px-6 flex items-center justify-between">
           <h1 className="text-base font-semibold text-neutral-900">Dashboard</h1>
@@ -49,7 +48,6 @@ export default function Dashboard() {
       </header>
 
       <main className="w-full max-w-7xl mx-auto px-6 py-6">
-        {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div className="card p-6">
             <div className="flex items-center justify-between mb-5">
@@ -85,9 +83,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Content */}
         <div className="grid grid-cols-12 gap-4">
-          {/* Main */}
           <div className="col-span-8">
             <div className="mb-5">
               <h2 className="text-base font-semibold text-neutral-900">Herramientas</h2>
@@ -137,9 +133,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Sidebar */}
           <div className="col-span-4 space-y-4">
-            {/* Configuraciones */}
             <div className="card p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-neutral-900">Configuraciones</h3>
@@ -163,7 +157,6 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* Simulaciones */}
             <div className="card p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-neutral-900">Recientes</h3>

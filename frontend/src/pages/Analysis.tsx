@@ -27,8 +27,6 @@ import {
   Legend,
   ResponsiveContainer,
   ReferenceLine,
-  ScatterChart,
-  Scatter,
 } from "recharts"
 
 // Datos de análisis de sensibilidad (basados en la tesis)
@@ -180,7 +178,6 @@ export default function Analysis() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="container mx-auto p-8 max-w-7xl">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
@@ -242,7 +239,6 @@ export default function Analysis() {
             </TabsTrigger>
           </TabsList>
 
-          {/* TAB: ANOVA */}
           <TabsContent value="anova" className="space-y-6">
             <Card className="border-slate-200 shadow-sm">
               <CardHeader className="bg-slate-50">
@@ -315,12 +311,10 @@ export default function Analysis() {
             )}
           </TabsContent>
 
-          {/* TAB: MONTE CARLO DISTRIBUTIONS */}
           <TabsContent value="montecarlo" className="space-y-6">
             <MonteCarloDistributions />
           </TabsContent>
 
-          {/* TAB: SENSIBILIDAD */}
           <TabsContent value="sensibilidad" className="space-y-6">
             <Card className="border-slate-200 shadow-sm">
               <CardHeader className="bg-slate-50">
@@ -451,7 +445,6 @@ export default function Analysis() {
             </Card>
           </TabsContent>
 
-          {/* TAB: LÍMITES DEL SISTEMA */}
           <TabsContent value="limites" className="space-y-6">
             <Card className="border-slate-200 shadow-sm">
               <CardHeader className="bg-slate-50">
@@ -510,7 +503,6 @@ export default function Analysis() {
             </Card>
           </TabsContent>
 
-          {/* TAB: ESCENARIOS */}
           <TabsContent value="escenarios" className="space-y-6">
             <Card className="border-slate-200 shadow-sm">
               <CardHeader className="bg-slate-50">
@@ -575,7 +567,6 @@ export default function Analysis() {
             </Card>
           </TabsContent>
 
-          {/* TAB: MONOTONICIDAD */}
           <TabsContent value="monotonicidad" className="space-y-6">
             <Alert variant="info">
               <Activity className="h-5 w-5" />
@@ -623,7 +614,7 @@ export default function Analysis() {
                     ))}
                   </div>
                   <p className="text-sm text-slate-600 mt-4 p-3 bg-slate-50 rounded-lg">
-                    ✓ Propiedad confirmada: Cada incremento de capacidad mejora el nivel de servicio
+                    Propiedad confirmada: Cada incremento de capacidad mejora el nivel de servicio
                   </p>
                 </CardContent>
               </Card>
@@ -663,7 +654,7 @@ export default function Analysis() {
                     ))}
                   </div>
                   <p className="text-sm text-slate-600 mt-4 p-3 bg-slate-50 rounded-lg">
-                    ✓ Propiedad confirmada: Cada día adicional de disrupción degrada el servicio
+                    Propiedad confirmada: Cada dia adicional de disrupcion degrada el servicio
                   </p>
                 </CardContent>
               </Card>

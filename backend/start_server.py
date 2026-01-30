@@ -4,7 +4,6 @@ import sys
 
 from pathlib import Path
 
-# Configurar PYTHONPATH y cambiar al directorio raíz
 root_dir = Path(__file__).parent.parent
 os.chdir(str(root_dir))
 sys.path.insert(0, str(root_dir))

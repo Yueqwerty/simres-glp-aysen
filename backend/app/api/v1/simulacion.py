@@ -44,7 +44,11 @@ def get_simulacion(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Simulación {simulacion_id} no encontrada",
         )
-    return sim
+    # Incluir nombre de configuración
+    response = SimulacionResponse.model_validate(sim)
+    if sim.configuracion:
+        response.configuracion_nombre = sim.configuracion.nombre
+    return response
 
 
 @router.get("/{simulacion_id}/resultados", response_model=ResultadoResponse)
@@ -153,4 +157,11 @@ def list_simulaciones(
         skip=skip,
         limit=limit,
     )
-    return sims
+    # Incluir nombre de configuración en cada simulación
+    responses = []
+    for sim in sims:
+        response = SimulacionResponse.model_validate(sim)
+        if sim.configuracion:
+            response.configuracion_nombre = sim.configuracion.nombre
+        responses.append(response)
+    return responses

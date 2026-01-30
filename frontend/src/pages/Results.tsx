@@ -121,7 +121,6 @@ export default function Results() {
       const response = await api.get<{ series_temporales: any[] }>(
         `/simulaciones/${simulacionId}/series-temporales`
       )
-      // Transformar nombres de campos de inglés a español
       return response.data.series_temporales.map((item: any) => ({
         dia: item.day ?? item.dia,
         inventario: item.inventory ?? item.inventario,
@@ -198,7 +197,6 @@ export default function Results() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
       <header className="h-16 bg-white border-b flex items-center sticky top-0 z-10">
         <div className="w-full max-w-7xl mx-auto px-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -230,7 +228,6 @@ export default function Results() {
           </div>
         ) : resultados && seriesData ? (
           <>
-            {/* KPIs Principales */}
             <div className="grid grid-cols-4 gap-4 mb-6">
               <div className="card p-6">
                 <div className="flex items-center justify-between mb-4">
@@ -293,7 +290,6 @@ export default function Results() {
               </div>
             </div>
 
-            {/* SECCIÓN DE GRÁFICOS PARA TESIS - ORGANIZADOS CON TABS */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-5 mb-6">
                 <TabsTrigger value="overview" className="flex items-center gap-2">
@@ -318,10 +314,8 @@ export default function Results() {
                 </TabsTrigger>
               </TabsList>
 
-              {/* TAB: VISTA GENERAL */}
               <TabsContent value="overview" className="space-y-6">
-              {/* 1. Serie Temporal de Inventario y Demanda */}
-              <div className="card p-6 relative">
+              <div className="card p-8 relative max-w-4xl mx-auto">
                 <button
                   onClick={() => exportarGrafico(grafico1Ref, 'grafico1_inventario_demanda')}
                   className="absolute top-4 right-4 p-2 hover:bg-neutral-100 rounded-lg transition-colors z-10"
@@ -330,14 +324,14 @@ export default function Results() {
                   <Download className="h-4 w-4 text-neutral-600" />
                 </button>
                 <div ref={grafico1Ref}>
-                  <h3 className="text-base font-semibold text-neutral-900 mb-4">
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">
                     Inventario y Demanda
                   </h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={seriesData}>
+                  <ResponsiveContainer width="100%" height={420}>
+                  <LineChart data={seriesData} margin={{ top: 20, right: 30, left: 20, bottom: 25 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
-                    <XAxis dataKey="dia" stroke="#737373" fontSize={12} />
-                    <YAxis stroke="#737373" fontSize={12} />
+                    <XAxis dataKey="dia" stroke="#737373" fontSize={13} label={{ value: "Día de Simulación", position: "insideBottom", offset: -5, fontSize: 14 }} />
+                    <YAxis stroke="#737373" fontSize={13} label={{ value: "Toneladas Métricas", angle: -90, position: "insideLeft", fontSize: 14 }} />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: "#fff",
@@ -345,12 +339,12 @@ export default function Results() {
                         borderRadius: "8px",
                       }}
                     />
-                    <Legend />
+                    <Legend wrapperStyle={{ paddingTop: 15 }} />
                     <Line
                       type="monotone"
                       dataKey="inventario"
                       stroke="#7C5BAD"
-                      strokeWidth={2}
+                      strokeWidth={2.5}
                       dot={false}
                       name="Inventario (TM)"
                     />
@@ -358,7 +352,7 @@ export default function Results() {
                       type="monotone"
                       dataKey="demanda"
                       stroke="#C4B0DC"
-                      strokeWidth={2}
+                      strokeWidth={2.5}
                       strokeDasharray="5 5"
                       dot={false}
                       name="Demanda (TM)"
@@ -369,10 +363,8 @@ export default function Results() {
               </div>
               </TabsContent>
 
-              {/* TAB: DEMANDA */}
               <TabsContent value="demanda" className="space-y-6">
-              {/* 2. Demanda Satisfecha vs Insatisfecha */}
-              <Card className="relative border-slate-200 shadow-sm">
+              <Card className="relative border-slate-200 shadow-sm p-8 max-w-4xl mx-auto">
                 <button
                   onClick={() => exportarGrafico(grafico2Ref, 'grafico2_demanda_satisfecha')}
                   className="absolute top-4 right-4 p-2 hover:bg-neutral-100 rounded-lg transition-colors z-10"
@@ -381,21 +373,22 @@ export default function Results() {
                   <Download className="h-4 w-4 text-neutral-600" />
                 </button>
                 <div ref={grafico2Ref}>
-                  <h3 className="text-base font-semibold text-neutral-900 mb-4">
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">
                     Demanda Satisfecha vs Insatisfecha
                   </h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={seriesData}>
+                  <ResponsiveContainer width="100%" height={420}>
+                  <AreaChart data={seriesData} margin={{ top: 20, right: 30, left: 20, bottom: 25 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
-                    <XAxis dataKey="dia" stroke="#737373" fontSize={12} />
-                    <YAxis stroke="#737373" fontSize={12} />
+                    <XAxis dataKey="dia" stroke="#737373" fontSize={13} label={{ value: "Día de Simulación", position: "insideBottom", offset: -5, fontSize: 14 }} />
+                    <YAxis stroke="#737373" fontSize={13} label={{ value: "Toneladas Métricas", angle: -90, position: "insideLeft", fontSize: 14 }} />
                     <Tooltip />
-                    <Legend />
+                    <Legend wrapperStyle={{ paddingTop: 15 }} />
                     <Area
                       type="monotone"
                       dataKey="demanda_satisfecha"
                       stackId="1"
                       stroke="#7C5BAD"
+                      strokeWidth={2}
                       fill="#7C5BAD"
                       fillOpacity={0.7}
                       name="Demanda Satisfecha (TM)"
@@ -405,6 +398,7 @@ export default function Results() {
                       dataKey={(d: SeriesTemporal) => d.demanda - d.demanda_satisfecha}
                       stackId="1"
                       stroke="#4A3666"
+                      strokeWidth={2}
                       fill="#4A3666"
                       fillOpacity={0.9}
                       name="Demanda Insatisfecha (TM)"
@@ -414,22 +408,22 @@ export default function Results() {
                 </div>
               </Card>
 
-              {/* 3. Autonomía del Sistema */}
-              <Card className="relative border-slate-200 shadow-sm">
+              <Card className="relative border-slate-200 shadow-sm p-8 max-w-4xl mx-auto">
                 <button onClick={() => exportarGrafico(grafico3Ref, 'grafico3_autonomia')} className="absolute top-4 right-4 p-2 hover:bg-neutral-100 rounded-lg transition-colors z-10" title="Descargar"><Download className="h-4 w-4 text-neutral-600" /></button>
                 <div ref={grafico3Ref}>
-                  <h3 className="text-base font-semibold text-neutral-900 mb-4">Autonomía del Sistema</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={seriesData}>
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">Autonomía del Sistema</h3>
+                  <ResponsiveContainer width="100%" height={420}>
+                  <AreaChart data={seriesData} margin={{ top: 20, right: 30, left: 20, bottom: 25 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
-                    <XAxis dataKey="dia" stroke="#737373" fontSize={12} />
-                    <YAxis stroke="#737373" fontSize={12} />
+                    <XAxis dataKey="dia" stroke="#737373" fontSize={13} label={{ value: "Día de Simulación", position: "insideBottom", offset: -5, fontSize: 14 }} />
+                    <YAxis stroke="#737373" fontSize={13} label={{ value: "Días de Autonomía", angle: -90, position: "insideLeft", fontSize: 14 }} />
                     <Tooltip />
-                    <Legend />
+                    <Legend wrapperStyle={{ paddingTop: 15 }} />
                     <Area
                       type="monotone"
                       dataKey="dias_autonomia"
                       stroke="#7C5BAD"
+                      strokeWidth={2}
                       fill="#D4C4E8"
                       fillOpacity={0.6}
                       name="Días de Autonomía"
@@ -439,7 +433,7 @@ export default function Results() {
                       stroke="#4A3666"
                       strokeWidth={2}
                       strokeDasharray="5 5"
-                      label={{ value: "Mínimo", fill: "#4A3666", fontSize: 12 }}
+                      label={{ value: "Mínimo", fill: "#4A3666", fontSize: 13 }}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -447,20 +441,18 @@ export default function Results() {
               </Card>
               </TabsContent>
 
-              {/* TAB: REABASTECIMIENTO */}
               <TabsContent value="reabastecimiento" className="space-y-6">
-              {/* 4. Suministros Recibidos */}
-              <Card className="relative border-slate-200 shadow-sm">
+              <Card className="relative border-slate-200 shadow-sm p-8 max-w-4xl mx-auto">
                 <button onClick={() => exportarGrafico(grafico4Ref, 'grafico4_reabastecimiento')} className="absolute top-4 right-4 p-2 hover:bg-neutral-100 rounded-lg transition-colors z-10" title="Descargar"><Download className="h-4 w-4 text-neutral-600" /></button>
                 <div ref={grafico4Ref}>
-                  <h3 className="text-base font-semibold text-neutral-900 mb-4">Eventos de Reabastecimiento</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={seriesData.filter((d) => d.suministro_recibido > 0).length > 0 ? seriesData.filter((d) => d.suministro_recibido > 0) : []}>
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">Eventos de Reabastecimiento</h3>
+                  <ResponsiveContainer width="100%" height={420}>
+                  <BarChart data={seriesData.filter((d) => d.suministro_recibido > 0).length > 0 ? seriesData.filter((d) => d.suministro_recibido > 0) : []} margin={{ top: 20, right: 30, left: 20, bottom: 25 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
-                    <XAxis dataKey="dia" stroke="#737373" fontSize={12} />
-                    <YAxis stroke="#737373" fontSize={12} />
+                    <XAxis dataKey="dia" stroke="#737373" fontSize={13} label={{ value: "Día de Simulación", position: "insideBottom", offset: -5, fontSize: 14 }} />
+                    <YAxis stroke="#737373" fontSize={13} label={{ value: "Toneladas Métricas", angle: -90, position: "insideLeft", fontSize: 14 }} />
                     <Tooltip />
-                    <Legend />
+                    <Legend wrapperStyle={{ paddingTop: 15 }} />
                     <Bar
                       dataKey="suministro_recibido"
                       fill="#7C5BAD"
@@ -476,46 +468,39 @@ export default function Results() {
                 </div>
               </Card>
 
-              {/* 7. Pedidos en Tránsito */}
-              <Card className="relative border-slate-200 shadow-sm">
+              <Card className="relative border-slate-200 shadow-sm p-8 max-w-4xl mx-auto">
                 <button onClick={() => exportarGrafico(grafico7Ref, 'grafico7_pedidos_transito')} className="absolute top-4 right-4 p-2 hover:bg-neutral-100 rounded-lg transition-colors z-10" title="Descargar"><Download className="h-4 w-4 text-neutral-600" /></button>
                 <div ref={grafico7Ref}>
-                  <CardHeader>
-                    <CardTitle>Pedidos en Tránsito</CardTitle>
-                    <CardDescription>Pedidos pendientes de llegada al hub</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                  <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={seriesData}>
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-1">Pedidos en Tránsito</h3>
+                  <p className="text-sm text-neutral-500 mb-4">Pedidos pendientes de llegada al hub</p>
+                  <ResponsiveContainer width="100%" height={420}>
+                  <LineChart data={seriesData} margin={{ top: 20, right: 30, left: 20, bottom: 25 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
-                    <XAxis dataKey="dia" stroke="#737373" fontSize={12} />
-                    <YAxis stroke="#737373" fontSize={12} />
+                    <XAxis dataKey="dia" stroke="#737373" fontSize={13} label={{ value: "Día de Simulación", position: "insideBottom", offset: -5, fontSize: 14 }} />
+                    <YAxis stroke="#737373" fontSize={13} label={{ value: "Cantidad de Pedidos", angle: -90, position: "insideLeft", fontSize: 14 }} />
                     <Tooltip />
-                    <Legend />
+                    <Legend wrapperStyle={{ paddingTop: 15 }} />
                     <Line
                       type="stepAfter"
                       dataKey="pedidos_pendientes"
                       stroke="#7C5BAD"
-                      strokeWidth={2}
+                      strokeWidth={2.5}
                       dot={false}
                       name="Pedidos Pendientes"
                     />
                   </LineChart>
                 </ResponsiveContainer>
-                  </CardContent>
                 </div>
               </Card>
               </TabsContent>
 
-              {/* TAB: DISRUPCIONES */}
               <TabsContent value="disrupciones" className="space-y-6">
-              {/* Gráfico combinado: Inventario con zonas de disrupción */}
-              <Card className="relative border-slate-200 shadow-sm">
+              <Card className="relative border-slate-200 shadow-sm max-w-4xl mx-auto">
                 <button onClick={() => exportarGrafico(grafico5Ref, 'grafico5_disrupciones_inventario')} className="absolute top-4 right-4 p-2 hover:bg-neutral-100 rounded-lg transition-colors z-10" title="Descargar"><Download className="h-4 w-4 text-neutral-600" /></button>
-                <div ref={grafico5Ref} className="p-6">
-                  <h3 className="text-base font-semibold text-neutral-900 mb-2">Impacto de Disrupciones en el Inventario</h3>
+                <div ref={grafico5Ref} className="p-8">
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-2">Impacto de Disrupciones en el Inventario</h3>
                   <p className="text-sm text-neutral-500 mb-4">Zonas sombreadas indican períodos de disrupción</p>
-                  <ResponsiveContainer width="100%" height={320}>
+                  <ResponsiveContainer width="100%" height={420}>
                     <ComposedChart data={seriesData.map(d => ({
                       ...d,
                       quiebreZona: d.quiebre_stock ? resultados.inventario_maximo_tm : 0,
@@ -536,8 +521,8 @@ export default function Results() {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" vertical={false} />
-                      <XAxis dataKey="dia" stroke="#737373" fontSize={11} tickLine={false} />
-                      <YAxis stroke="#737373" fontSize={11} tickLine={false} />
+                      <XAxis dataKey="dia" stroke="#737373" fontSize={13} tickLine={false} label={{ value: "Día de Simulación", position: "insideBottom", offset: -5, fontSize: 14 }} />
+                      <YAxis stroke="#737373" fontSize={13} tickLine={false} label={{ value: "Toneladas Métricas", angle: -90, position: "insideLeft", fontSize: 14 }} />
                       <Tooltip
                         contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e5e5', borderRadius: '8px' }}
                         formatter={(value: number, name: string) => {
@@ -573,15 +558,13 @@ export default function Results() {
                 </div>
               </Card>
 
-              {/* Gráfico de barras: Análisis de eventos */}
-              <Card className="relative border-slate-200 shadow-sm">
+              <Card className="relative border-slate-200 shadow-sm max-w-4xl mx-auto">
                 <button onClick={() => exportarGrafico(grafico6Ref, 'grafico6_analisis_disrupciones')} className="absolute top-4 right-4 p-2 hover:bg-neutral-100 rounded-lg transition-colors z-10" title="Descargar"><Download className="h-4 w-4 text-neutral-600" /></button>
-                <div ref={grafico6Ref} className="p-6">
-                  <h3 className="text-base font-semibold text-neutral-900 mb-4">Resumen de Disrupciones</h3>
-                  <div className="grid grid-cols-2 gap-6">
-                    {/* Lado izquierdo: Gráfico de dona simulado */}
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="relative w-40 h-40">
+                <div ref={grafico6Ref} className="p-8">
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-6">Resumen de Disrupciones</h3>
+                  <div className="grid grid-cols-2 gap-8">
+                    <div className="flex flex-col items-center justify-center py-6">
+                      <div className="relative w-52 h-52">
                         <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
                           <circle cx="50" cy="50" r="40" fill="none" stroke="#E8E8E8" strokeWidth="12" />
                           <circle
@@ -597,33 +580,32 @@ export default function Results() {
                           />
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <span className="text-2xl font-bold text-neutral-900">{resultados.nivel_servicio_pct.toFixed(1)}%</span>
-                          <span className="text-xs text-neutral-500">Nivel Servicio</span>
+                          <span className="text-3xl font-bold text-neutral-900">{resultados.nivel_servicio_pct.toFixed(1)}%</span>
+                          <span className="text-sm text-neutral-500">Nivel Servicio</span>
                         </div>
                       </div>
-                      <div className="flex gap-4 mt-4">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-3 h-3 rounded-full bg-[#7C5BAD]"></div>
-                          <span className="text-xs text-neutral-600">Operativo</span>
+                      <div className="flex gap-6 mt-6">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 rounded-full bg-[#7C5BAD]"></div>
+                          <span className="text-sm text-neutral-600">Operativo</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-3 h-3 rounded-full bg-[#4A3666]"></div>
-                          <span className="text-xs text-neutral-600">Quiebre</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 rounded-full bg-[#4A3666]"></div>
+                          <span className="text-sm text-neutral-600">Quiebre</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Lado derecho: Métricas */}
-                    <div className="space-y-4">
-                      <div className="p-4 bg-gradient-to-r from-[#4A3666]/10 to-transparent rounded-lg border-l-4 border-[#4A3666]">
-                        <p className="text-xs text-neutral-500 uppercase tracking-wide">Días con Quiebre</p>
-                        <p className="text-3xl font-bold text-[#4A3666]">{resultados.dias_con_quiebre}</p>
-                        <p className="text-sm text-neutral-500">{resultados.probabilidad_quiebre_stock_pct.toFixed(1)}% del período</p>
+                    <div className="space-y-6 py-6">
+                      <div className="p-5 bg-gradient-to-r from-[#4A3666]/10 to-transparent rounded-lg border-l-4 border-[#4A3666]">
+                        <p className="text-sm text-neutral-500 uppercase tracking-wide">Días con Quiebre</p>
+                        <p className="text-4xl font-bold text-[#4A3666]">{resultados.dias_con_quiebre}</p>
+                        <p className="text-base text-neutral-500 mt-1">{resultados.probabilidad_quiebre_stock_pct.toFixed(1)}% del período</p>
                       </div>
-                      <div className="p-4 bg-gradient-to-r from-[#7C5BAD]/10 to-transparent rounded-lg border-l-4 border-[#7C5BAD]">
-                        <p className="text-xs text-neutral-500 uppercase tracking-wide">Ruta Bloqueada</p>
-                        <p className="text-3xl font-bold text-[#7C5BAD]">{resultados.dias_bloqueados_total}</p>
-                        <p className="text-sm text-neutral-500">{resultados.disrupciones_totales} eventos de disrupción</p>
+                      <div className="p-5 bg-gradient-to-r from-[#7C5BAD]/10 to-transparent rounded-lg border-l-4 border-[#7C5BAD]">
+                        <p className="text-sm text-neutral-500 uppercase tracking-wide">Ruta Bloqueada</p>
+                        <p className="text-4xl font-bold text-[#7C5BAD]">{resultados.dias_bloqueados_total}</p>
+                        <p className="text-base text-neutral-500 mt-1">{resultados.disrupciones_totales} eventos de disrupción</p>
                       </div>
                     </div>
                   </div>
@@ -631,18 +613,16 @@ export default function Results() {
               </Card>
               </TabsContent>
 
-              {/* TAB: ANÁLISIS */}
               <TabsContent value="analisis" className="space-y-6">
-              {/* 8. Distribución de Inventario */}
-              <Card className="relative border-slate-200 shadow-sm">
+              <Card className="relative border-slate-200 shadow-sm p-8 max-w-4xl mx-auto">
                 <button onClick={() => exportarGrafico(grafico8Ref, 'grafico8_distribucion_inventario')} className="absolute top-4 right-4 p-2 hover:bg-neutral-100 rounded-lg transition-colors z-10" title="Descargar"><Download className="h-4 w-4 text-neutral-600" /></button>
                 <div ref={grafico8Ref}>
-                  <h3 className="text-base font-semibold text-neutral-900 mb-4">Distribución de Inventario</h3>
-                  <ResponsiveContainer width="100%" height={250}>
-                  <ScatterChart>
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">Distribución de Inventario</h3>
+                  <ResponsiveContainer width="100%" height={420}>
+                  <ScatterChart margin={{ top: 20, right: 30, left: 20, bottom: 25 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
-                    <XAxis dataKey="dia" stroke="#737373" fontSize={12} name="Día" />
-                    <YAxis dataKey="inventario" stroke="#737373" fontSize={12} name="Inventario (TM)" />
+                    <XAxis dataKey="dia" stroke="#737373" fontSize={13} name="Día" label={{ value: "Día de Simulación", position: "insideBottom", offset: -5, fontSize: 14 }} />
+                    <YAxis dataKey="inventario" stroke="#737373" fontSize={13} name="Inventario (TM)" label={{ value: "Inventario (TM)", angle: -90, position: "insideLeft", fontSize: 14 }} />
                     <Tooltip cursor={{ strokeDasharray: "3 3" }} />
                     <Scatter
                       data={seriesData}
@@ -654,23 +634,24 @@ export default function Results() {
                       y={resultados.inventario_promedio_tm}
                       stroke="#7C5BAD"
                       strokeDasharray="5 5"
-                      label={{ value: "Promedio", fill: "#7C5BAD", fontSize: 12 }}
+                      strokeWidth={2}
+                      label={{ value: "Promedio", fill: "#7C5BAD", fontSize: 13 }}
                     />
                     <ReferenceLine
                       y={resultados.inventario_minimo_tm}
                       stroke="#4A3666"
                       strokeDasharray="5 5"
-                      label={{ value: "Mínimo", fill: "#4A3666", fontSize: 12 }}
+                      strokeWidth={2}
+                      label={{ value: "Mínimo", fill: "#4A3666", fontSize: 13 }}
                     />
                   </ScatterChart>
                 </ResponsiveContainer>
                 </div>
               </Card>
 
-              {/* Tabla de Métricas Detalladas */}
-              <Card className="border-slate-200 shadow-sm">
+              <Card className="border-slate-200 shadow-sm p-6 max-w-4xl mx-auto">
                 <h3 className="text-base font-semibold text-neutral-900 mb-4">
-                  Métricas Detalladas (21 KPIs)
+                  Metricas Detalladas (21 KPIs)
                 </h3>
                 <div className="grid grid-cols-2 gap-6">
                   <div>

@@ -142,9 +142,8 @@ export default function Configuration() {
       await createConfigMutation.mutateAsync(configData)
       alert("Configuración guardada exitosamente")
       navigate("/")
-    } catch (error) {
-      console.error("Error al guardar configuración:", error)
-      alert("Error al guardar configuración")
+    } catch {
+      alert("Error al guardar configuracion")
     }
   }
 
@@ -180,9 +179,8 @@ export default function Configuration() {
 
       // Navegar a resultados
       navigate(`/resultados/${simulation.id}`)
-    } catch (error) {
-      console.error("Error al ejecutar simulación:", error)
-      alert("Error al ejecutar simulación")
+    } catch {
+      alert("Error al ejecutar simulacion")
     } finally {
       setIsExecuting(false)
     }
@@ -193,8 +191,7 @@ export default function Configuration() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="container mx-auto p-8 max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
+                <div className="mb-8">
           <Button variant="outline" size="sm" onClick={() => navigate("/")} className="mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Volver al Dashboard
@@ -224,8 +221,7 @@ export default function Configuration() {
         </div>
 
         <form className="space-y-6">
-          {/* Información General */}
-          <Card className="border-slate-200 shadow-sm">
+                    <Card className="border-slate-200 shadow-sm">
             <CardHeader className="bg-slate-50">
               <CardTitle>Información General</CardTitle>
               <CardDescription>Identificación y descripción de la configuración</CardDescription>
@@ -254,8 +250,7 @@ export default function Configuration() {
             </CardContent>
           </Card>
 
-          {/* Hub y Política de Inventario */}
-          <Card className="border-slate-200 shadow-sm">
+                    <Card className="border-slate-200 shadow-sm">
             <CardHeader className="bg-slate-50">
               <CardTitle>Hub y Política de Inventario</CardTitle>
               <CardDescription>Configuración del hub de Coyhaique y reglas de reabastecimiento</CardDescription>
@@ -335,8 +330,7 @@ export default function Configuration() {
             </CardContent>
           </Card>
 
-          {/* Demanda */}
-          <Card className="border-slate-200 shadow-sm">
+                    <Card className="border-slate-200 shadow-sm">
             <CardHeader className="bg-slate-50">
               <CardTitle>Parámetros de Demanda</CardTitle>
               <CardDescription>Configuración de la demanda diaria y estacionalidad</CardDescription>
@@ -431,8 +425,7 @@ export default function Configuration() {
             </CardContent>
           </Card>
 
-          {/* Disrupciones */}
-          <Card className="border-slate-200 shadow-sm">
+                    <Card className="border-slate-200 shadow-sm">
             <CardHeader className="bg-slate-50">
               <CardTitle>Disrupciones de la Ruta</CardTitle>
               <CardDescription>Configuración de eventos que bloquean el transporte</CardDescription>
@@ -512,8 +505,7 @@ export default function Configuration() {
             </CardContent>
           </Card>
 
-          {/* Logística y Simulación */}
-          <Card className="border-slate-200 shadow-sm">
+                    <Card className="border-slate-200 shadow-sm">
             <CardHeader className="bg-slate-50">
               <CardTitle>Logística y Simulación</CardTitle>
               <CardDescription>Configuración de tiempos de entrega y horizonte de simulación</CardDescription>

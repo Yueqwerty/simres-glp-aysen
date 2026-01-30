@@ -16,11 +16,7 @@ export const api = axios.create({
   timeout: 120000, // 2 minutos para operaciones grandes como cargar 100k réplicas
 })
 
-// Interceptors para manejo de errores global
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    console.error("API Error:", error)
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )

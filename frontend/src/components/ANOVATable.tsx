@@ -75,7 +75,6 @@ export function ANOVATable({ data, experimentId }: ANOVATableProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header con información del experimento */}
       <Alert variant="info">
         <BarChart3 className="h-5 w-5" />
         <AlertTitle>Análisis ANOVA de Dos Vías</AlertTitle>
@@ -84,7 +83,6 @@ export function ANOVATable({ data, experimentId }: ANOVATableProps) {
         </AlertDescription>
       </Alert>
 
-      {/* Tabla ANOVA Principal */}
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="bg-slate-50">
           <CardTitle className="flex items-center gap-2">
@@ -148,7 +146,6 @@ export function ANOVATable({ data, experimentId }: ANOVATableProps) {
         </CardContent>
       </Card>
 
-      {/* Efectos Principales y Tamaños del Efecto */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="border-slate-200 shadow-sm">
           <CardHeader className="bg-green-50">
@@ -270,7 +267,6 @@ export function ANOVATable({ data, experimentId }: ANOVATableProps) {
         </Card>
       </div>
 
-      {/* Medias por Configuración */}
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="bg-slate-50">
           <CardTitle>Medias por Configuración</CardTitle>

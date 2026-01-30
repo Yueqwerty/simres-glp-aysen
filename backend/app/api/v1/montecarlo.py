@@ -415,15 +415,6 @@ def get_experiment_anova(
             detail=f"Se necesitan al menos 2 niveles del factor Duración para ANOVA. Solo se encontró: {num_duraciones} nivel(es). Este experimento solo tiene una configuración de duración.",
         )
 
-    # Debug: imprimir información del DataFrame
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.info(f"DataFrame shape: {df.shape}")
-    logger.info(f"DataFrame columns: {df.columns.tolist()}")
-    logger.info(f"Capacidades únicas: {df['capacidad_cat'].unique()}")
-    logger.info(f"Duraciones únicas: {df['duracion_cat'].unique()}")
-    logger.info(f"Primeras filas:\n{df.head()}")
-
     try:
         # Calcular ANOVA
         resultado = calcular_anova_dos_vias(
@@ -437,8 +428,6 @@ def get_experiment_anova(
         return formatear_resultados_anova(resultado)
 
     except Exception as e:
-        import traceback
-        logger.error(f"Error completo al calcular ANOVA: {traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al calcular ANOVA: {str(e)}. Tipo: {type(e).__name__}",

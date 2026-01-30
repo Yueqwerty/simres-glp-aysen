@@ -25,7 +25,6 @@ import {
   ReferenceLine,
   ComposedChart,
   Line,
-  Cell,
   AreaChart,
   Area,
   LineChart,
@@ -87,20 +86,12 @@ export function MonteCarloDistributions() {
     queryFn: async () => {
       if (selectedExperiments.length === 0) return []
 
-      console.log("Cargando réplicas para experimentos:", selectedExperiments)
-
       const promises = selectedExperiments.map((id) =>
         api.get(`/monte-carlo/experiments/${id}/replicas`)
       )
 
       const responses = await Promise.all(promises)
       const data = responses.map((r) => r.data) as ExperimentoData[]
-
-      console.log("Datos recibidos:", data.map(d => ({
-        id: d.experiment_id,
-        nombre: d.experiment_nombre,
-        replicas: d.replicas?.length || 0
-      })))
 
       return data
     },
@@ -296,7 +287,6 @@ export function MonteCarloDistributions() {
 
   return (
     <div className="space-y-6">
-      {/* Selector de experimentos */}
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="bg-slate-50">
           <CardTitle>Seleccionar Experimentos (máx. 3)</CardTitle>
@@ -345,7 +335,6 @@ export function MonteCarloDistributions() {
         </CardContent>
       </Card>
 
-      {/* Gráficos */}
       {selectedExperiments.length > 0 && (
         <>
           {isLoading ? (
@@ -375,7 +364,6 @@ export function MonteCarloDistributions() {
             </Alert>
           ) : (
             <>
-              {/* Histograma */}
               <Card className="border-slate-200 shadow-sm">
                 <CardHeader className="bg-slate-50">
                   <div className="flex items-center justify-between">
@@ -426,7 +414,6 @@ export function MonteCarloDistributions() {
                 </CardContent>
               </Card>
 
-              {/* Boxplot Stats */}
               <Card className="border-slate-200 shadow-sm">
                 <CardHeader className="bg-slate-50">
                   <div className="flex items-center justify-between">
@@ -462,7 +449,6 @@ export function MonteCarloDistributions() {
                 </CardContent>
               </Card>
 
-              {/* Scatter Plot */}
               <Card className="border-slate-200 shadow-sm">
                 <CardHeader className="bg-slate-50">
                   <div className="flex items-center justify-between">
@@ -517,7 +503,6 @@ export function MonteCarloDistributions() {
                 </CardContent>
               </Card>
 
-              {/* CDF - Función de Distribución Acumulada */}
               <Card className="border-slate-200 shadow-sm">
                 <CardHeader className="bg-slate-50">
                   <div className="flex items-center justify-between">
@@ -587,7 +572,6 @@ export function MonteCarloDistributions() {
                 </CardContent>
               </Card>
 
-              {/* Comparativo de KPIs */}
               <Card className="border-slate-200 shadow-sm">
                 <CardHeader className="bg-slate-50">
                   <div className="flex items-center justify-between">
@@ -637,7 +621,6 @@ export function MonteCarloDistributions() {
                 </CardContent>
               </Card>
 
-              {/* Intervalos de Confianza */}
               <Card className="border-slate-200 shadow-sm">
                 <CardHeader className="bg-slate-50">
                   <div className="flex items-center justify-between">
@@ -704,7 +687,6 @@ export function MonteCarloDistributions() {
                 </CardContent>
               </Card>
 
-              {/* Tabla de Estadísticas */}
               <Card className="border-slate-200 shadow-sm">
                 <CardHeader className="bg-slate-50">
                   <div className="flex items-center justify-between">
@@ -757,7 +739,6 @@ export function MonteCarloDistributions() {
                 </CardContent>
               </Card>
 
-              {/* Selector de Series Temporales */}
               <Card className="border-slate-200 shadow-sm">
                 <CardHeader className="bg-blue-50">
                   <CardTitle>Series Temporales con Bandas de Confianza</CardTitle>
@@ -795,7 +776,6 @@ export function MonteCarloDistributions() {
 
                   {timeSeriesData && !timeSeriesLoading && (
                     <div className="space-y-6">
-                      {/* Gráfico de Inventario con Bandas - Estilo Tesis */}
                       <div className="bg-white rounded-lg p-6">
                         <div className="flex items-center justify-between mb-6">
                           <h4 className="text-lg font-medium text-gray-900">Nivel de Inventario</h4>
@@ -833,7 +813,6 @@ export function MonteCarloDistributions() {
                                 }}
                               />
                               <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                              {/* Banda P5-P95 */}
                               <Area
                                 type="monotone"
                                 dataKey="inventario_p95"
@@ -851,7 +830,6 @@ export function MonteCarloDistributions() {
                                 name=""
                                 legendType="none"
                               />
-                              {/* Línea de punto de reorden */}
                               <ReferenceLine
                                 y={391.8}
                                 stroke="#a855f7"
@@ -859,7 +837,6 @@ export function MonteCarloDistributions() {
                                 strokeWidth={2}
                                 label={{ value: "R", position: "left", fill: "#a855f7", fontWeight: "bold" }}
                               />
-                              {/* Línea media */}
                               <Line
                                 type="monotone"
                                 dataKey="inventario_mean"
@@ -887,7 +864,6 @@ export function MonteCarloDistributions() {
                         </div>
                       </div>
 
-                      {/* Gráfico de Autonomía - Estilo Tesis */}
                       <div className="bg-white rounded-lg p-6">
                         <div className="flex items-center justify-between mb-6">
                           <h4 className="text-lg font-medium text-gray-900">Días de Autonomía</h4>
@@ -924,7 +900,6 @@ export function MonteCarloDistributions() {
                                   borderRadius: '8px',
                                 }}
                               />
-                              {/* Banda P5-P95 */}
                               <Area
                                 type="monotone"
                                 dataKey="dias_autonomia_p95"
@@ -939,7 +914,6 @@ export function MonteCarloDistributions() {
                                 fill="#ffffff"
                                 fillOpacity={1}
                               />
-                              {/* Línea media */}
                               <Line
                                 type="monotone"
                                 dataKey="dias_autonomia_mean"
@@ -947,7 +921,6 @@ export function MonteCarloDistributions() {
                                 strokeWidth={2}
                                 dot={false}
                               />
-                              {/* Línea de autonomía teórica 8.2 */}
                               <ReferenceLine
                                 y={8.2}
                                 stroke="#a855f7"
@@ -960,7 +933,6 @@ export function MonteCarloDistributions() {
                         </div>
                       </div>
 
-                      {/* Gráfico de Probabilidad de Quiebre - Estilo Tesis */}
                       <div className="bg-white rounded-lg p-6">
                         <div className="flex items-center justify-between mb-6">
                           <h4 className="text-lg font-medium text-gray-900">Probabilidad de Eventos por Día</h4>
@@ -1039,13 +1011,6 @@ export function MonteCarloDistributions() {
             </>
           )}
         </>
-      )}
-
-      {/* Debug info */}
-      {replicasData && replicasData.length > 0 && (
-        <div className="text-xs text-slate-500 p-2 bg-slate-100 rounded">
-          Debug: {replicasData.map(d => `${d.experiment_nombre}: ${d.replicas?.length || 0} réplicas`).join(", ")}
-        </div>
       )}
 
       {selectedExperiments.length === 0 && (
